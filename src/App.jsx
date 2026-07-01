@@ -1,366 +1,350 @@
 
 import { useState, useEffect } from "react";
 
-const BLUE = "#1a73e8";
-const DARK_BLUE = "#0d5abf";
-const LIGHT_BLUE = "#e8f0fe";
-const GREEN = "#25d366";
-const GRAY_BG = "#f5f7fa";
-const BORDER = "#e0e0e0";
-const TEXT = "#222";
-const MUTED = "#666";
+// ── API Configuration ───────────────────────────────────────────────
+// Points to the Spring Boot backend. Change this for production deployment.
+const API_BASE_URL = "https://clinic-production-0f46.up.railway.app/api";
 
-const styles = {
-  // Reset & base
-  body: {
-    fontFamily: "'Segoe UI', Arial, sans-serif",
-    color: TEXT,
-    lineHeight: 1.6,
-    overflowX: "hidden",
-    margin: 0,
-    padding: 0,
-  },
+/**
+ * Calls the backend POST /api/appointments endpoint.
+ * Maps frontend form field names to the backend's AppointmentRequest shape.
+ * Returns { ok: boolean, message: string, fieldErrors?: object }
+ */
+async function submitAppointment(form) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/appointments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: form.name,
+        phoneNumber: form.phone,
+        emailAddress: form.email || null,
+        primaryConcern: form.concern,
+        preferredDate: form.date,       // "YYYY-MM-DD"
+        preferredTime: form.time,
+        additionalNotes: form.msg || null,
+      }),
+    });
 
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      return { ok: true, message: result.message };
+    }
+    // Validation errors come back as a field->message map in result.data
+    return {
+      ok: false,
+      message: result.message || "Something went wrong. Please try again.",
+      fieldErrors: typeof result.data === "object" ? result.data : null,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      message: "Could not reach the server. Please check your connection and try again.",
+    };
+  }
+}
+
+
+// ── Brand Palette ─────────────────────────────────────────────────────
+// Primary: Deep Rose  #b5446e  (mauve-rose, luxe skin/beauty)
+// Dark:    Burgundy   #8b2f52
+// Light:   Blush      #fce8f0
+// Accent:  Warm Gold  #c9963a  (premium feel)
+// BG:      Soft Cream #fdf7f9
+// Surface: Pure White #ffffff
+// Text:    Charcoal   #1e1e1e
+// Muted:   Warm Gray  #6b6070
+
+const R   = "#b5446e";   // primary rose
+const RD  = "#8b2f52";   // dark rose
+const RL  = "#fce8f0";   // light blush
+const GOLD= "#c9963a";   // accent gold
+const CREAM="#fdf7f9";   // page bg
+const TEXT = "#1e1e1e";
+const MUTED= "#6b6070";
+const BORDER="#e8d5df";
+const GREEN= "#25d366";
+
+const s = {
   // Navbar
   navbar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "0 5%",
-    height: 68,
-    background: "#fff",
-    boxShadow: "0 2px 14px rgba(0,0,0,.09)",
-    position: "sticky",
-    top: 0,
-    zIndex: 1000,
+    display:"flex", justifyContent:"space-between", alignItems:"center",
+    padding:"0 5%", height:68,
+    background:"#fff", boxShadow:"0 2px 16px rgba(181,68,110,.10)",
+    position:"sticky", top:0, zIndex:1000,
   },
-  logo: {
-    fontSize: 21,
-    fontWeight: 800,
-    color: BLUE,
-    whiteSpace: "nowrap",
+  logo: { fontSize:20, fontWeight:800, color:R, whiteSpace:"nowrap", letterSpacing:"-0.3px" },
+  logoSub: { fontSize:11, fontWeight:500, color:GOLD, letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginTop:-2 },
+  btnBook: {
+    background:R, color:"#fff", padding:"9px 20px",
+    borderRadius:8, fontSize:14, fontWeight:700,
+    textDecoration:"none", cursor:"pointer", letterSpacing:"0.2px",
+  },
+
+  // Buttons
+  btnPrimary: {
+    display:"inline-block", background:R, color:"#fff",
+    padding:"13px 30px", borderRadius:8, border:"none",
+    fontSize:15, fontWeight:700, cursor:"pointer", textDecoration:"none",
+  },
+  btnOutline: {
+    display:"inline-block", background:"transparent", color:R,
+    padding:"13px 30px", borderRadius:8, border:`2px solid ${R}`,
+    fontSize:15, fontWeight:700, cursor:"pointer", textDecoration:"none",
+  },
+  btnSmall: {
+    display:"inline-block", background:R, color:"#fff",
+    padding:"9px 22px", borderRadius:6, fontSize:14,
+    fontWeight:700, textDecoration:"none", cursor:"pointer",
   },
 
   // Hero
   hero: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 40,
-    padding: "70px 5%",
-    background: "linear-gradient(135deg,#ddeeff 0%,#f0f6ff 50%,#fff 100%)",
-    flexWrap: "wrap",
+    display:"flex", alignItems:"center", justifyContent:"space-between",
+    gap:40, padding:"70px 5%",
+    background:`linear-gradient(135deg, #fce8f0 0%, #fdf7f9 55%, #fff8fb 100%)`,
+    flexWrap:"wrap",
   },
-  heroText: { flex: 1, minWidth: 0 },
-  heroH1: { fontSize: "clamp(28px,5vw,52px)", lineHeight: 1.18, color: TEXT, marginBottom: 18, fontWeight: 800 },
-  heroSpan: { color: BLUE },
-  heroP: { fontSize: "clamp(15px,2vw,18px)", color: MUTED, marginBottom: 32, maxWidth: 480 },
-  heroBtns: { display: "flex", gap: 14, flexWrap: "wrap" },
-  heroImage: { flex: 1, minWidth: 0, textAlign: "center" },
-  heroImg: { width: "100%", maxWidth: 460, borderRadius: 20, margin: "auto" },
-
-  // Buttons
-  btnPrimary: {
-    display: "inline-block",
-    background: BLUE,
-    color: "#fff",
-    padding: "13px 30px",
-    borderRadius: 8,
-    border: "none",
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: "pointer",
-    textDecoration: "none",
-    transition: "background .3s",
+  heroText: { flex:1, minWidth:0 },
+  heroEyebrow: {
+    display:"inline-block", background:RL, color:R,
+    fontSize:12, fontWeight:700, letterSpacing:"2px",
+    textTransform:"uppercase", padding:"5px 14px",
+    borderRadius:20, marginBottom:16,
   },
-  btnOutline: {
-    display: "inline-block",
-    background: "transparent",
-    color: BLUE,
-    padding: "13px 30px",
-    borderRadius: 8,
-    border: `2px solid ${BLUE}`,
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: "pointer",
-    textDecoration: "none",
-    transition: "all .3s",
+  heroH1: { fontSize:"clamp(28px,5vw,50px)", lineHeight:1.15, color:TEXT, marginBottom:18, fontWeight:800 },
+  heroSpan: { color:R },
+  heroP: { fontSize:"clamp(15px,2vw,17px)", color:MUTED, marginBottom:32, maxWidth:480, lineHeight:1.7 },
+  heroBtns: { display:"flex", gap:14, flexWrap:"wrap" },
+  heroImage: { flex:1, minWidth:0, textAlign:"center" },
+  heroImg: { width:"100%", maxWidth:460, borderRadius:24, margin:"auto", objectFit:"cover" },
+  heroBadge: {
+    display:"inline-flex", alignItems:"center", gap:8,
+    background:"#fff", border:`1px solid ${BORDER}`,
+    borderRadius:40, padding:"8px 16px", marginTop:20,
+    fontSize:13, color:MUTED, boxShadow:"0 2px 12px rgba(181,68,110,.08)",
   },
-  btnSmall: {
-    display: "inline-block",
-    background: BLUE,
-    color: "#fff",
-    padding: "9px 22px",
-    borderRadius: 6,
-    fontSize: 14,
-    fontWeight: 600,
-    textDecoration: "none",
-    cursor: "pointer",
-  },
-  btnBook: {
-    background: BLUE,
-    color: "#fff",
-    padding: "9px 18px",
-    borderRadius: 7,
-    fontSize: 14,
-    fontWeight: 600,
-    textDecoration: "none",
-    cursor: "pointer",
-  },
+  heroBadgeDot: { width:8, height:8, borderRadius:"50%", background:"#4caf50", display:"inline-block" },
 
   // Stats
   stats: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4,1fr)",
-    background: BLUE,
-    padding: "36px 5%",
+    display:"grid", gridTemplateColumns:"repeat(4,1fr)",
+    background:R, padding:"36px 5%",
   },
-  stat: { textAlign: "center", color: "#fff", padding: 10 },
-  statH2: { fontSize: "clamp(28px,4vw,40px)", fontWeight: 800, margin: 0 },
-  statP: { fontSize: 14, opacity: 0.9, marginTop: 4 },
+  stat: { textAlign:"center", color:"#fff", padding:10 },
+  statH2: { fontSize:"clamp(26px,4vw,40px)", fontWeight:800, margin:0 },
+  statP: { fontSize:13, opacity:0.88, marginTop:4, letterSpacing:"0.3px" },
 
-  // Section title
-  sectionTitle: { textAlign: "center", marginBottom: 50 },
-  sectionTitleH2: { fontSize: "clamp(24px,4vw,36px)", color: TEXT, marginBottom: 10, fontWeight: 700 },
-  sectionTitleP: { fontSize: 16, color: MUTED },
+  // Section
+  sectionTitle: { textAlign:"center", marginBottom:50 },
+  sectionH2: { fontSize:"clamp(22px,4vw,34px)", color:TEXT, marginBottom:10, fontWeight:800 },
+  sectionP: { fontSize:16, color:MUTED },
+  sectionLine: { width:48, height:3, background:R, borderRadius:2, margin:"12px auto 0" },
 
   // About
-  about: { padding: "80px 5%", background: "#fff" },
-  aboutContent: { display: "flex", gap: 60, alignItems: "center", flexWrap: "wrap" },
-  aboutImage: { flex: 1, minWidth: 280 },
-  aboutImg: { width: "100%", borderRadius: 16 },
-  aboutText: { flex: 1, minWidth: 280 },
-  aboutH3: { fontSize: "clamp(20px,3vw,28px)", marginBottom: 14, color: TEXT, fontWeight: 700 },
-  aboutP: { color: MUTED, marginBottom: 14, fontSize: 15 },
-  aboutList: { marginBottom: 26, paddingLeft: 0, listStyle: "none" },
-  aboutLi: { padding: "7px 0", fontSize: 15, color: TEXT },
+  about: { padding:"80px 5%", background:"#fff" },
+  aboutContent: { display:"flex", gap:60, alignItems:"center", flexWrap:"wrap" },
+  aboutImage: { flex:1, minWidth:280 },
+  aboutImg: { width:"100%", borderRadius:20, objectFit:"cover" },
+  aboutText: { flex:1, minWidth:280 },
+  aboutTag: {
+    display:"inline-block", background:RL, color:R,
+    fontSize:12, fontWeight:700, letterSpacing:"1.5px",
+    textTransform:"uppercase", padding:"4px 12px", borderRadius:4, marginBottom:14,
+  },
+  aboutH3: { fontSize:"clamp(20px,3vw,28px)", marginBottom:14, color:TEXT, fontWeight:800 },
+  aboutP: { color:MUTED, marginBottom:14, fontSize:15, lineHeight:1.75 },
+  aboutList: { marginBottom:26, paddingLeft:0, listStyle:"none" },
+  aboutLi: { padding:"7px 0", fontSize:15, color:TEXT, display:"flex", alignItems:"center", gap:10 },
+  checkmark: { color:R, fontSize:18, fontWeight:700, flexShrink:0 },
 
-  // Doctors
-  doctors: { padding: "80px 5%", background: GRAY_BG },
-  doctorsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-    gap: 26,
+  // Specialists
+  specialists: { padding:"80px 5%", background:CREAM },
+  specGrid: {
+    display:"grid",
+    gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",
+    gap:26,
   },
-  doctorCard: {
-    background: "#fff",
-    borderRadius: 14,
-    overflow: "hidden",
-    boxShadow: "0 4px 18px rgba(0,0,0,.08)",
-    textAlign: "center",
-    transition: "transform .3s, box-shadow .3s",
-    cursor: "default",
+  specCard: {
+    background:"#fff", borderRadius:18, overflow:"hidden",
+    boxShadow:"0 4px 20px rgba(181,68,110,.09)",
+    textAlign:"center", transition:"transform .3s, box-shadow .3s",
   },
-  doctorImg: { width: "100%", height: 200, objectFit: "cover" },
-  doctorInfo: { padding: "20px 16px" },
-  doctorH3: { fontSize: 17, marginBottom: 5, color: TEXT, fontWeight: 700 },
-  spec: { color: BLUE, fontSize: 13, fontWeight: 700, marginBottom: 4 },
-  exp: { color: "#888", fontSize: 13, marginBottom: 14 },
+  specImgWrap: { position:"relative", overflow:"hidden" },
+  specImg: { width:"100%", height:210, objectFit:"cover", display:"block" },
+  specOverlay: {
+    position:"absolute", bottom:0, left:0, right:0,
+    background:`linear-gradient(to top, ${R}cc, transparent)`,
+    height:60,
+  },
+  specInfo: { padding:"18px 16px 22px" },
+  specName: { fontSize:17, marginBottom:4, color:TEXT, fontWeight:800 },
+  specRole: { color:R, fontSize:13, fontWeight:700, marginBottom:3, letterSpacing:"0.3px" },
+  specExp: { color:MUTED, fontSize:13, marginBottom:14 },
+
+  // Featured single doctor
+  featuredDocWrap: {
+    display:"flex", gap:48, alignItems:"center",
+    background:"#fff", borderRadius:24, padding:"40px",
+    boxShadow:"0 8px 36px rgba(181,68,110,.10)",
+    maxWidth:920, margin:"0 auto", flexWrap:"wrap",
+  },
+  featuredDocImgCol: { flex:"0 0 260px" },
+  featuredDocImg: {
+    width:260, height:260, borderRadius:20, objectFit:"cover",
+    boxShadow:"0 10px 30px rgba(181,68,110,.18)", margin:"0 auto",
+  },
+  featuredDocInfo: { flex:1, minWidth:260 },
+  featuredDocName: { fontSize:"clamp(20px,3vw,26px)", color:TEXT, fontWeight:800, marginBottom:6 },
 
   // Services
-  services: { padding: "80px 5%", background: "#fff" },
-  servicesGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
-    gap: 22,
+  services: { padding:"80px 5%", background:"#fff" },
+  servGrid: {
+    display:"grid",
+    gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",
+    gap:22,
   },
-  serviceCard: {
-    background: GRAY_BG,
-    borderRadius: 12,
-    padding: "28px 18px",
-    textAlign: "center",
-    border: "2px solid transparent",
-    transition: "all .3s",
-    cursor: "default",
+  servCard: {
+    background:CREAM, borderRadius:14,
+    padding:"28px 20px", textAlign:"center",
+    border:`2px solid transparent`, transition:"all .3s", cursor:"default",
   },
-  serviceCardHover: {
-    background: LIGHT_BLUE,
-    borderColor: BLUE,
-    transform: "translateY(-5px)",
+  servCardHover: {
+    background:RL, borderColor:R, transform:"translateY(-5px)",
+    boxShadow:`0 10px 28px rgba(181,68,110,.13)`,
   },
-  serviceIcon: { fontSize: 42, marginBottom: 14 },
-  serviceH3: { fontSize: 16, marginBottom: 8, color: TEXT, fontWeight: 700 },
-  serviceP: { fontSize: 14, color: MUTED },
+  servIcon: { fontSize:40, marginBottom:14 },
+  servH3: { fontSize:15, marginBottom:8, color:TEXT, fontWeight:800 },
+  servP: { fontSize:13, color:MUTED, lineHeight:1.6 },
+
+  // Treatments / Why Us
+  whyUs: { padding:"80px 5%", background:CREAM },
+  whyGrid: { display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:24 },
+  whyCard: {
+    background:"#fff", borderRadius:16, padding:"28px 22px",
+    borderLeft:`4px solid ${R}`, borderRadius:0,
+    boxShadow:"0 2px 14px rgba(181,68,110,.07)",
+  },
+  whyNum: { fontSize:36, fontWeight:800, color:RL, lineHeight:1, marginBottom:8 },
+  whyNumInner: { color:R },
+  whyH3: { fontSize:16, fontWeight:800, color:TEXT, marginBottom:8 },
+  whyP: { fontSize:14, color:MUTED, lineHeight:1.65 },
 
   // Appointment
-  appointment: { padding: "80px 5%", background: GRAY_BG },
+  appt: { padding:"80px 5%", background:CREAM },
   apptBox: {
-    display: "flex",
-    gap: 40,
-    background: "#fff",
-    borderRadius: 18,
-    padding: "48px 44px",
-    boxShadow: "0 6px 32px rgba(0,0,0,.08)",
-    flexWrap: "wrap",
+    display:"flex", gap:40,
+    background:"#fff", borderRadius:20,
+    padding:"48px 44px", boxShadow:"0 8px 36px rgba(181,68,110,.10)",
+    flexWrap:"wrap",
   },
   apptInfo: {
-    flex: "0 0 290px",
-    background: BLUE,
-    color: "#fff",
-    padding: "36px 28px",
-    borderRadius: 12,
+    flex:"0 0 280px", background:R, color:"#fff",
+    padding:"36px 28px", borderRadius:14,
   },
-  apptInfoH3: { fontSize: 20, marginBottom: 20, fontWeight: 700 },
-  apptInfoP: { marginBottom: 12, fontSize: 15, opacity: 0.95 },
+  apptInfoH3: { fontSize:20, marginBottom:20, fontWeight:800 },
+  apptInfoP: { marginBottom:12, fontSize:14, opacity:0.92, lineHeight:1.65 },
   waBtn: {
-    display: "inline-block",
-    background: GREEN,
-    color: "#fff",
-    padding: "12px 18px",
-    borderRadius: 8,
-    fontWeight: 700,
-    marginTop: 12,
-    textDecoration: "none",
-    fontSize: 15,
-    cursor: "pointer",
+    display:"inline-block", background:GREEN, color:"#fff",
+    padding:"12px 18px", borderRadius:8, fontWeight:700,
+    marginTop:12, textDecoration:"none", fontSize:15,
   },
-  apptForm: { flex: 1, minWidth: 0 },
-  formRow: { display: "flex", gap: 18, marginBottom: 16, flexWrap: "wrap" },
-  formGroup: { flex: 1, display: "flex", flexDirection: "column", gap: 6, minWidth: 200 },
-  formLabel: { fontSize: 14, fontWeight: 700, color: TEXT },
+  apptForm: { flex:1, minWidth:0 },
+  formRow: { display:"flex", gap:18, marginBottom:16, flexWrap:"wrap" },
+  formGroup: { flex:1, display:"flex", flexDirection:"column", gap:6, minWidth:200 },
+  formLabel: { fontSize:13, fontWeight:700, color:TEXT, letterSpacing:"0.3px" },
   formInput: {
-    padding: "11px 14px",
-    border: `1.5px solid ${BORDER}`,
-    borderRadius: 8,
-    fontSize: 15,
-    fontFamily: "inherit",
-    outline: "none",
-    color: TEXT,
-    background: "#fff",
-    width: "100%",
-    boxSizing: "border-box",
+    padding:"11px 14px", border:`1.5px solid ${BORDER}`,
+    borderRadius:8, fontSize:15, fontFamily:"inherit",
+    outline:"none", color:TEXT, background:"#fff",
+    width:"100%", boxSizing:"border-box",
   },
   successMsg: {
-    marginTop: 14,
-    padding: 14,
-    background: "#d4edda",
-    border: "1px solid #b8dfc2",
-    color: "#155724",
-    borderRadius: 8,
-    fontSize: 15,
+    marginTop:14, padding:14, background:"#fce8f0",
+    border:`1px solid ${R}`, color:RD, borderRadius:8, fontSize:15,
   },
 
-  // Contact / Map
-  contact: { padding: "80px 5%", background: "#fff" },
-  mapWrap: { borderRadius: 14, overflow: "hidden", boxShadow: "0 4px 18px rgba(0,0,0,.1)" },
+  // Map
+  contact: { padding:"80px 5%", background:"#fff" },
+  mapWrap: { borderRadius:16, overflow:"hidden", boxShadow:"0 4px 20px rgba(181,68,110,.10)" },
 
   // Footer
-  footer: { background: "#0f0f24", color: "#b0b0c0", padding: "60px 5% 22px" },
+  footer: { background:"#1a0d12", color:"#b8a8b0", padding:"60px 5% 22px" },
   footerGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))",
-    gap: 40,
-    marginBottom: 40,
+    display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",
+    gap:40, marginBottom:40,
   },
-  footerColH3: { color: "#fff", fontSize: 17, marginBottom: 14, fontWeight: 700 },
-  footerColP: { fontSize: 14, marginBottom: 8, lineHeight: 1.7 },
-  footerLinkUl: { listStyle: "none", padding: 0, margin: 0 },
-  footerLinkLi: { marginBottom: 8 },
-  footerLinkA: { color: "#b0b0c0", fontSize: 14, textDecoration: "none" },
+  footerH3: { color:"#fff", fontSize:16, marginBottom:14, fontWeight:700 },
+  footerP: { fontSize:14, marginBottom:8, lineHeight:1.75 },
+  footerUl: { listStyle:"none", padding:0, margin:0 },
+  footerLi: { marginBottom:8 },
+  footerA: { color:"#b8a8b0", fontSize:14, textDecoration:"none" },
   footerBottom: {
-    textAlign: "center",
-    paddingTop: 20,
-    borderTop: "1px solid #1e1e38",
-    fontSize: 13,
-    color: "#555",
+    textAlign:"center", paddingTop:20,
+    borderTop:"1px solid #2d1520", fontSize:13, color:"#554048",
   },
 
-  // Back to top
   backToTop: {
-    position: "fixed",
-    bottom: 24,
-    right: 24,
-    background: BLUE,
-    color: "#fff",
-    border: "none",
-    borderRadius: "50%",
-    width: 48,
-    height: 48,
-    fontSize: 20,
-    cursor: "pointer",
-    zIndex: 998,
-    boxShadow: "0 4px 14px rgba(26,115,232,.4)",
-    transition: "background .3s, transform .2s",
+    position:"fixed", bottom:24, right:24,
+    background:R, color:"#fff", border:"none", borderRadius:"50%",
+    width:48, height:48, fontSize:20, cursor:"pointer", zIndex:998,
+    boxShadow:"0 4px 16px rgba(181,68,110,.4)",
   },
 };
 
-// ── Navbar ──────────────────────────────────────────────────────────
+// ── Navbar ────────────────────────────────────────────────────────────
 function Navbar({ onNav }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
+  const [open, setOpen] = useState(false);
   const links = [
-    { label: "Home", id: "home" },
-    { label: "About", id: "about" },
-    { label: "Doctors", id: "doctors" },
-    { label: "Services", id: "services" },
-    { label: "Contact", id: "contact" },
+    { label:"Home", id:"home" }, { label:"About", id:"about" },
+    { label:"Specialists", id:"specialists" }, { label:"Services", id:"services" },
+    { label:"Contact", id:"contact" },
   ];
-
   return (
     <>
-      <nav style={styles.navbar}>
-        <div style={styles.logo}>🏥 MediCare Clinic</div>
-
-        {/* Desktop links */}
-        <ul style={{ display: "flex", alignItems: "center", gap: 26, listStyle: "none", margin: 0, padding: 0 }}
-          className="nav-desktop">
-          {links.map((l) => (
+      <nav style={s.navbar}>
+        <div>
+          <span style={s.logo}>✦ Devs Hair &amp; Skin Clinic</span>
+          <span style={s.logoSub}>Dermatology &amp; Trichology</span>
+        </div>
+        <ul style={{ display:"flex", alignItems:"center", gap:24, listStyle:"none", margin:0, padding:0 }} className="nav-desktop">
+          {links.map(l => (
             <li key={l.id}>
-              <a
-                href={`#${l.id}`}
-                onClick={(e) => { e.preventDefault(); onNav(l.id); }}
-                style={{ color: "#444", fontSize: 15, fontWeight: 500, textDecoration: "none" }}
-              >
+              <a href={`#${l.id}`} onClick={e => { e.preventDefault(); onNav(l.id); }}
+                style={{ color:"#444", fontSize:15, fontWeight:500, textDecoration:"none" }}>
                 {l.label}
               </a>
             </li>
           ))}
           <li>
-            <a
-              href="#appointment"
-              onClick={(e) => { e.preventDefault(); onNav("appointment"); }}
-              style={styles.btnBook}
-            >
-              Book Appointment
+            <a href="#appointment" onClick={e => { e.preventDefault(); onNav("appointment"); }} style={s.btnBook}>
+              Book Consultation
             </a>
           </li>
         </ul>
-
-        {/* Hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{ background: "none", border: "none", fontSize: 28, color: BLUE, cursor: "pointer", padding: 4 }}
-          className="nav-hamburger"
-          aria-label="Open menu"
-        >
-          {menuOpen ? "✕" : "☰"}
+        <button onClick={() => setOpen(!open)}
+          style={{ background:"none", border:"none", fontSize:28, color:R, cursor:"pointer", padding:4 }}
+          className="nav-hamburger" aria-label="Open menu">
+          {open ? "✕" : "☰"}
         </button>
       </nav>
 
-      {/* Mobile drawer */}
-      {menuOpen && (
-        <div style={{
-          display: "flex", flexDirection: "column",
-          position: "fixed", top: 68, left: 0, right: 0,
-          background: "#fff", boxShadow: "0 8px 24px rgba(0,0,0,.12)",
-          zIndex: 999, padding: "8px 0 20px",
-        }}>
-          {links.map((l) => (
-            <a
-              key={l.id}
-              href={`#${l.id}`}
-              onClick={(e) => { e.preventDefault(); setMenuOpen(false); onNav(l.id); }}
-              style={{ padding: "14px 5%", fontSize: 16, fontWeight: 500, color: "#333", borderBottom: "1px solid #f0f0f0", textDecoration: "none" }}
-            >
+      {open && (
+        <div style={{ display:"flex", flexDirection:"column", position:"fixed", top:68, left:0, right:0,
+          background:"#fff", boxShadow:"0 8px 24px rgba(181,68,110,.12)", zIndex:999, padding:"8px 0 20px" }}>
+          {links.map(l => (
+            <a key={l.id} href={`#${l.id}`}
+              onClick={e => { e.preventDefault(); setOpen(false); onNav(l.id); }}
+              style={{ padding:"14px 5%", fontSize:16, fontWeight:500, color:"#333",
+                borderBottom:"1px solid #f0eaec", textDecoration:"none" }}>
               {l.label}
             </a>
           ))}
-          <a
-            href="#appointment"
-            onClick={(e) => { e.preventDefault(); setMenuOpen(false); onNav("appointment"); }}
-            style={{ margin: "14px 5% 0", background: BLUE, color: "#fff", padding: 13, borderRadius: 8, textAlign: "center", fontWeight: 600, textDecoration: "none" }}
-          >
-            📅 Book Appointment
+          <a href="#appointment" onClick={e => { e.preventDefault(); setOpen(false); onNav("appointment"); }}
+            style={{ margin:"14px 5% 0", background:R, color:"#fff", padding:13,
+              borderRadius:8, textAlign:"center", fontWeight:700, textDecoration:"none" }}>
+            📅 Book Consultation
           </a>
         </div>
       )}
@@ -368,32 +352,38 @@ function Navbar({ onNav }) {
   );
 }
 
-// ── Hero ─────────────────────────────────────────────────────────────
+// ── Hero ──────────────────────────────────────────────────────────────
 function Hero({ onNav }) {
   return (
-    <section id="home" style={styles.hero}>
-      <div style={styles.heroText}>
-        <h1 style={styles.heroH1}>
-          Your Health,<br />
-          <span style={styles.heroSpan}>Our Priority</span>
+    <section id="home" style={s.hero}>
+      <div style={s.heroText}>
+        <span style={s.heroEyebrow}>Chennai's Trusted Skin &amp; Hair Experts</span>
+        <h1 style={s.heroH1}>
+          Glow from Within,<br />
+          <span style={s.heroSpan}>Look Your Best</span>
         </h1>
-        <p style={styles.heroP}>
-          Trusted medical care for you and your family. Book an appointment with our expert doctors today.
+        <p style={s.heroP}>
+          Advanced dermatology, trichology, and cosmetic treatments tailored to your skin and hair.
+          Expert care in a luxurious, clinical environment.
         </p>
-        <div style={styles.heroBtns}>
-          <a href="#appointment" onClick={(e) => { e.preventDefault(); onNav("appointment"); }} style={styles.btnPrimary}>
-            Book Appointment
+        <div style={s.heroBtns}>
+          <a href="#appointment" onClick={e => { e.preventDefault(); onNav("appointment"); }} style={s.btnPrimary}>
+            Book Consultation
           </a>
-          <a href="#services" onClick={(e) => { e.preventDefault(); onNav("services"); }} style={styles.btnOutline}>
-            Our Services
+          <a href="#services" onClick={e => { e.preventDefault(); onNav("services"); }} style={s.btnOutline}>
+            Explore Services
           </a>
         </div>
+        <div style={s.heroBadge}>
+          <span style={s.heroBadgeDot}></span>
+          <span>Accepting new patients today</span>
+        </div>
       </div>
-      <div style={styles.heroImage}>
+      <div style={s.heroImage}>
         <img
-          src="https://img.freepik.com/free-vector/doctor-character-background_1270-84.jpg"
-          alt="Doctor"
-          style={styles.heroImg}
+          src="https://img.freepik.com/free-vector/dermatologist-concept-illustration_114360-7712.jpg"
+          alt="Dermatologist consultation"
+          style={s.heroImg}
         />
       </div>
     </section>
@@ -403,17 +393,17 @@ function Hero({ onNav }) {
 // ── Stats ─────────────────────────────────────────────────────────────
 function Stats() {
   const data = [
-    { num: "5000+", label: "Happy Patients" },
-    { num: "15+", label: "Expert Doctors" },
-    { num: "10+", label: "Years Experience" },
-    { num: "20+", label: "Services" },
+    { num:"8000+", label:"Happy Patients" },
+    { num:"14+", label:"Years Experience" },
+    { num:"30+", label:"Advanced Treatments" },
+    { num:"4.9★", label:"Patient Rating" },
   ];
   return (
-    <div style={styles.stats}>
-      {data.map((s) => (
-        <div key={s.label} style={styles.stat}>
-          <h2 style={styles.statH2}>{s.num}</h2>
-          <p style={styles.statP}>{s.label}</p>
+    <div style={s.stats}>
+      {data.map(d => (
+        <div key={d.label} style={s.stat}>
+          <h2 style={s.statH2}>{d.num}</h2>
+          <p style={s.statP}>{d.label}</p>
         </div>
       ))}
     </div>
@@ -422,35 +412,49 @@ function Stats() {
 
 // ── About ─────────────────────────────────────────────────────────────
 function About({ onNav }) {
+  const points = [
+    "IADVL-certified Dermatologists & Trichologists",
+    "US-FDA approved treatment technologies",
+    "Personalised skincare & haircare regimens",
+    "Sterile, clinical-grade treatment rooms",
+    "Post-treatment care & follow-up support",
+  ];
   return (
-    <section id="about" style={styles.about}>
-      <div style={styles.sectionTitle}>
-        <h2 style={styles.sectionTitleH2}>About Our Clinic</h2>
-        <p style={styles.sectionTitleP}>We are committed to delivering quality healthcare</p>
+    <section id="about" style={s.about}>
+      <div style={s.sectionTitle}>
+        <h2 style={s.sectionH2}>About Our Clinic</h2>
+        <p style={s.sectionP}>Where clinical expertise meets aesthetic excellence</p>
+        <div style={s.sectionLine}></div>
       </div>
-      <div style={styles.aboutContent}>
-        <div style={styles.aboutImage}>
+      <div style={s.aboutContent}>
+        <div style={s.aboutImage}>
           <img
-            src="https://img.freepik.com/free-vector/hospital-building-concept-illustration_114360-8440.jpg"
-            alt="Clinic"
-            style={styles.aboutImg}
+            src="https://img.freepik.com/free-vector/skin-care-clinic-concept-illustration_114360-7713.jpg"
+            alt="Devs Hair and Skin Clinic"
+            style={{ ...s.aboutImg, minHeight:280 }}
           />
         </div>
-        <div style={styles.aboutText}>
-          <h3 style={styles.aboutH3}>A Clinic You Can Trust</h3>
-          <p style={styles.aboutP}>
-            MediCare Clinic has been serving the community for over 10 years with highly qualified doctors and friendly staff.
+        <div style={s.aboutText}>
+          <span style={s.aboutTag}>Est. 2016 · Chennai</span>
+          <h3 style={s.aboutH3}>A Clinic Built on Science &amp; Care</h3>
+          <p style={s.aboutP}>
+            Devs Hair &amp; Skin Clinic has been transforming lives in Chennai since 2016.
+            Our team of board-certified dermatologists and trichologists combine the latest
+            medical science with a patient-first philosophy.
           </p>
-          <p style={styles.aboutP}>
-            Our modern facilities and patient-first approach ensure you always receive the best care in a comfortable environment.
+          <p style={s.aboutP}>
+            Whether you need acne treatment, hair restoration, cosmetic procedures, or a full
+            skin analysis — we deliver results with transparency and precision.
           </p>
-          <ul style={styles.aboutList}>
-            {["✅ Qualified & Experienced Doctors", "✅ Modern Medical Equipment", "✅ 24/7 Emergency Support", "✅ Affordable Treatment Plans", "✅ Friendly & Caring Staff"].map((item) => (
-              <li key={item} style={styles.aboutLi}>{item}</li>
+          <ul style={s.aboutList}>
+            {points.map(p => (
+              <li key={p} style={s.aboutLi}>
+                <span style={s.checkmark}>✦</span> {p}
+              </li>
             ))}
           </ul>
-          <a href="#appointment" onClick={(e) => { e.preventDefault(); onNav("appointment"); }} style={styles.btnPrimary}>
-            Get Consultation
+          <a href="#appointment" onClick={e => { e.preventDefault(); onNav("appointment"); }} style={s.btnPrimary}>
+            Get a Free Skin Analysis
           </a>
         </div>
       </div>
@@ -458,192 +462,238 @@ function About({ onNav }) {
   );
 }
 
-// ── Doctors ───────────────────────────────────────────────────────────
-function Doctors({ onNav }) {
-  const doctors = [
-    { name: "Dr. Rajesh Kumar", spec: "General Physician", exp: "15 Years Experience", img: "https://img.freepik.com/free-vector/doctor-character-background_1270-84.jpg" },
-    { name: "Dr. Priya Sharma", spec: "Pediatrician", exp: "12 Years Experience", img: "https://img.freepik.com/free-vector/female-doctor-with-stethoscope_1270-64.jpg" },
-    { name: "Dr. Suresh Nair", spec: "Cardiologist", exp: "18 Years Experience", img: "https://img.freepik.com/free-vector/doctor-character-background_1270-84.jpg" },
-    { name: "Dr. Meena Patel", spec: "Dermatologist", exp: "10 Years Experience", img: "https://img.freepik.com/free-vector/female-doctor-with-stethoscope_1270-64.jpg" },
-  ];
-
+// ── Specialist (single, featured) ───────────────────────────────────
+function Specialists({ onNav }) {
+  const doc = {
+    name:"Dr. Devika Anand",
+    role:"Founder & Chief Dermatologist",
+    exp:"14 Years Experience",
+    qual:"MD Dermatology, AIIMS · IADVL Member · Fellowship in Aesthetic Medicine",
+    bio:"Dr. Devika Anand has helped over 8,000 patients achieve healthier skin and hair through evidence-based dermatology and cosmetic treatments. She specialises in acne management, hair restoration, anti-ageing procedures, and laser therapies.",
+    img:"https://img.freepik.com/free-vector/doctor-character-background_1270-84.jpg",
+  };
   return (
-    <section id="doctors" style={styles.doctors}>
-      <div style={styles.sectionTitle}>
-        <h2 style={styles.sectionTitleH2}>Our Doctors</h2>
-        <p style={styles.sectionTitleP}>Meet our team of expert medical professionals</p>
+    <section id="specialists" style={s.specialists}>
+      <div style={s.sectionTitle}>
+        <h2 style={s.sectionH2}>Meet Your Specialist</h2>
+        <p style={s.sectionP}>Board-certified expertise dedicated to your skin &amp; hair health</p>
+        <div style={s.sectionLine}></div>
       </div>
-      <div style={styles.doctorsGrid}>
-        {doctors.map((d) => (
-          <DoctorCard key={d.name} doctor={d} onNav={onNav} />
-        ))}
+      <div style={s.featuredDocWrap}>
+        <div style={s.featuredDocImgCol}>
+          <img src={doc.img} alt={doc.name} style={s.featuredDocImg} />
+        </div>
+        <div style={s.featuredDocInfo}>
+          <h3 style={s.featuredDocName}>{doc.name}</h3>
+          <p style={s.specRole}>{doc.role}</p>
+          <p style={{ ...s.specExp, marginBottom:16 }}>{doc.exp} · {doc.qual}</p>
+          <p style={s.aboutP}>{doc.bio}</p>
+          <a href="#appointment" onClick={e => { e.preventDefault(); onNav("appointment"); }} style={s.btnPrimary}>
+            Book a Session
+          </a>
+        </div>
       </div>
     </section>
-  );
-}
-
-function DoctorCard({ doctor, onNav }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      style={{ ...styles.doctorCard, transform: hovered ? "translateY(-7px)" : "none", boxShadow: hovered ? "0 10px 30px rgba(0,0,0,.13)" : "0 4px 18px rgba(0,0,0,.08)" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <img src={doctor.img} alt={doctor.name} style={styles.doctorImg} />
-      <div style={styles.doctorInfo}>
-        <h3 style={styles.doctorH3}>{doctor.name}</h3>
-        <p style={styles.spec}>{doctor.spec}</p>
-        <p style={styles.exp}>{doctor.exp}</p>
-        <a href="#appointment" onClick={(e) => { e.preventDefault(); onNav("appointment"); }} style={styles.btnSmall}>
-          Book Now
-        </a>
-      </div>
-    </div>
   );
 }
 
 // ── Services ──────────────────────────────────────────────────────────
 function Services() {
-  const services = [
-    { icon: "🫀", title: "Cardiology", desc: "ECG, Echo and complete heart care by expert cardiologists." },
-    { icon: "👶", title: "Pediatrics", desc: "Specialized care for children from newborn to teenage years." },
-    { icon: "🦷", title: "Dental Care", desc: "General dentistry, orthodontics and cosmetic procedures." },
-    { icon: "👁️", title: "Eye Care", desc: "Eye exams, vision correction and eye disease treatment." },
-    { icon: "🧠", title: "Neurology", desc: "Brain, spine and nervous system diagnosis and treatment." },
-    { icon: "🩻", title: "Radiology", desc: "X-Ray, MRI, CT Scan and Ultrasound imaging on-site." },
-    { icon: "💊", title: "General Medicine", desc: "Common illness treatment, preventive care and checkups." },
-    { icon: "🧪", title: "Lab Tests", desc: "Blood work, urine analysis and diagnostic tests on-site." },
+  const list = [
+    { icon:"✨", title:"Acne & Scar Treatments", desc:"Medical-grade peels, lasers, and therapies to clear acne and fade scars effectively." },
+    { icon:"💆", title:"Hair Loss & PRP Therapy", desc:"Platelet-rich plasma, mesotherapy and scalp treatments for hair regrowth." },
+    { icon:"🌟", title:"Anti-Ageing & Botox", desc:"Botox, fillers, and skin-tightening procedures for a youthful, refreshed look." },
+    { icon:"🔬", title:"Laser Hair Removal", desc:"Permanent hair reduction with advanced diode and Nd:YAG laser technology." },
+    { icon:"🧴", title:"Skin Brightening", desc:"Chemical peels, glutathione treatments, and pigmentation correction therapies." },
+    { icon:"💊", title:"Dermatitis & Psoriasis", desc:"Evidence-based medical management for chronic skin conditions and flare-ups." },
+    { icon:"🩺", title:"Dermoscopy & Diagnosis", desc:"Advanced skin lesion analysis, mole mapping, and early cancer screening." },
+    { icon:"💅", title:"Nail & Scalp Disorders", desc:"Specialist care for fungal infections, alopecia, dandruff, and nail diseases." },
   ];
-
   return (
-    <section id="services" style={styles.services}>
-      <div style={styles.sectionTitle}>
-        <h2 style={styles.sectionTitleH2}>Our Services</h2>
-        <p style={styles.sectionTitleP}>We offer a wide range of medical services</p>
+    <section id="services" style={s.services}>
+      <div style={s.sectionTitle}>
+        <h2 style={s.sectionH2}>Our Treatments</h2>
+        <p style={s.sectionP}>Comprehensive skin &amp; hair care under one roof</p>
+        <div style={s.sectionLine}></div>
       </div>
-      <div style={styles.servicesGrid}>
-        {services.map((s) => (
-          <ServiceCard key={s.title} service={s} />
+      <div style={s.servGrid}>
+        {list.map(sv => <ServCard key={sv.title} sv={sv} />)}
+      </div>
+    </section>
+  );
+}
+
+function ServCard({ sv }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div style={{ ...s.servCard, ...(hov ? s.servCardHover : {}) }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <div style={s.servIcon}>{sv.icon}</div>
+      <h3 style={s.servH3}>{sv.title}</h3>
+      <p style={s.servP}>{sv.desc}</p>
+    </div>
+  );
+}
+
+// ── Why Choose Us ─────────────────────────────────────────────────────
+function WhyUs() {
+  const items = [
+    { n:"01", title:"Science-Backed Protocols", desc:"Every treatment is evidence-based and follows internationally accepted dermatological guidelines." },
+    { n:"02", title:"Personalised Treatment Plans", desc:"We assess your unique skin type, concerns, and goals before recommending any procedure." },
+    { n:"03", title:"State-of-the-Art Technology", desc:"Our clinic is equipped with the latest lasers, RF devices, and diagnostic tools available in India." },
+    { n:"04", title:"Transparent & Ethical Care", desc:"No unnecessary upselling. We recommend only what your skin genuinely needs, explained clearly." },
+  ];
+  return (
+    <section style={s.whyUs}>
+      <div style={s.sectionTitle}>
+        <h2 style={s.sectionH2}>Why Choose Devs?</h2>
+        <p style={s.sectionP}>The Devs difference — felt in every visit</p>
+        <div style={s.sectionLine}></div>
+      </div>
+      <div style={s.whyGrid}>
+        {items.map(it => (
+          <div key={it.n} style={s.whyCard}>
+            <div style={s.whyNum}><span style={s.whyNumInner}>{it.n}</span></div>
+            <h3 style={s.whyH3}>{it.title}</h3>
+            <p style={s.whyP}>{it.desc}</p>
+          </div>
         ))}
       </div>
     </section>
   );
 }
 
-function ServiceCard({ service }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      style={{ ...styles.serviceCard, ...(hovered ? styles.serviceCardHover : {}) }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div style={styles.serviceIcon}>{service.icon}</div>
-      <h3 style={styles.serviceH3}>{service.title}</h3>
-      <p style={styles.serviceP}>{service.desc}</p>
-    </div>
-  );
-}
-
-// ── Appointment Form ──────────────────────────────────────────────────
+// ── Appointment ───────────────────────────────────────────────────────
 function Appointment() {
-  const [form, setForm] = useState({ name: "", phone: "", email: "", dept: "", date: "", time: "", msg: "" });
+  const [form, setForm] = useState({ name:"", phone:"", email:"", concern:"", date:"", time:"", msg:"" });
   const [success, setSuccess] = useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const today = new Date().toISOString().split("T")[0];
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (!form.name || !form.phone || !form.dept || !form.date || !form.time) {
+    setErrorMsg("");
+    if (!form.name || !form.phone || !form.concern || !form.date || !form.time) {
       alert("Please fill in all required fields marked with *");
       return;
     }
-    setSuccess(true);
-    setForm({ name: "", phone: "", email: "", dept: "", date: "", time: "", msg: "" });
-    setTimeout(() => setSuccess(false), 6000);
+    setSubmitting(true);
+    const result = await submitAppointment(form);
+    setSubmitting(false);
+
+    if (result.ok) {
+      setSuccess(true);
+      setForm({ name:"", phone:"", email:"", concern:"", date:"", time:"", msg:"" });
+      setTimeout(() => setSuccess(false), 7000);
+    } else {
+      const detail = result.fieldErrors
+        ? Object.values(result.fieldErrors).join(" ")
+        : "";
+      setErrorMsg(`${result.message} ${detail}`.trim());
+    }
   };
 
-  const timeSlots = ["9:00 AM – 10:00 AM", "10:00 AM – 11:00 AM", "11:00 AM – 12:00 PM", "2:00 PM – 3:00 PM", "3:00 PM – 4:00 PM", "4:00 PM – 5:00 PM", "5:00 PM – 6:00 PM"];
-  const depts = ["General Medicine", "Cardiology", "Pediatrics", "Dental Care", "Eye Care", "Neurology", "Radiology", "Lab Tests"];
+
+  const concerns = [
+    "Acne & Pimples", "Hair Loss & Thinning", "Skin Pigmentation",
+    "Anti-Ageing & Botox", "Laser Hair Removal", "Skin Brightening",
+    "Psoriasis / Dermatitis", "Scalp Treatment", "Mole / Lesion Check",
+    "General Skin Consultation",
+  ];
+  const slots = [
+    "9:00 AM – 10:00 AM", "10:00 AM – 11:00 AM", "11:00 AM – 12:00 PM",
+    "2:00 PM – 3:00 PM", "3:00 PM – 4:00 PM", "4:00 PM – 5:00 PM", "5:00 PM – 7:00 PM",
+  ];
 
   return (
-    <section id="appointment" style={styles.appointment}>
-      <div style={styles.sectionTitle}>
-        <h2 style={styles.sectionTitleH2}>Book an Appointment</h2>
-        <p style={styles.sectionTitleP}>Fill in the form and we will contact you shortly</p>
+    <section id="appointment" style={s.appt}>
+      <div style={s.sectionTitle}>
+        <h2 style={s.sectionH2}>Book a Consultation</h2>
+        <p style={s.sectionP}>Fill in the form — our team will confirm your slot within 2 hours</p>
+        <div style={s.sectionLine}></div>
       </div>
-      <div style={styles.apptBox}>
-
-        {/* Info Panel */}
-        <div style={styles.apptInfo}>
-          <h3 style={styles.apptInfoH3}>Contact Information</h3>
-          <p style={styles.apptInfoP}>📍 123, Main Road<br />Chennai – 600001</p>
-          <p style={styles.apptInfoP}>📞 +91 98765 43210</p>
-          <p style={styles.apptInfoP}>✉️ info@medicareclinic.com</p>
-          <p style={styles.apptInfoP}>🕐 Mon–Sat: 9 AM – 8 PM</p>
-          <p style={styles.apptInfoP}>🕐 Sunday: 10 AM – 2 PM</p>
-          <br />
-          <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" style={styles.waBtn}>
-            💬 Chat on WhatsApp
+      <div style={s.apptBox}>
+        {/* Info */}
+        <div style={s.apptInfo}>
+          <h3 style={s.apptInfoH3}>Clinic Details</h3>
+          <p style={s.apptInfoP}>📍 45, Anna Nagar 2nd Avenue<br />Chennai – 600 040</p>
+          <p style={s.apptInfoP}>📞 +91 98400 55678</p>
+          <p style={s.apptInfoP}>✉️ vipluved@gmail.com</p>
+          <p style={s.apptInfoP}>🕐 Mon–Sat: 9 AM – 7 PM</p>
+          <p style={s.apptInfoP}>🕐 Sunday: 10 AM – 2 PM</p>
+          <p style={{ ...s.apptInfoP, marginTop:16, fontSize:13, opacity:0.8 }}>
+            💡 Bring any previous prescriptions or patch-test results to your first visit.
+          </p>
+          <a href="https://wa.me/919840055678" target="_blank" rel="noreferrer" style={s.waBtn}>
+            💬 WhatsApp Us
           </a>
         </div>
 
         {/* Form */}
-        <div style={styles.apptForm}>
-          <div style={styles.formRow}>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Full Name *</label>
-              <input name="name" value={form.name} onChange={handleChange} placeholder="Your full name" required style={styles.formInput} />
+        <div style={s.apptForm}>
+          <div style={s.formRow}>
+            <div style={s.formGroup}>
+              <label style={s.formLabel}>Full Name *</label>
+              <input name="name" value={form.name} onChange={handleChange}
+                placeholder="Your full name" required style={s.formInput} />
             </div>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Phone Number *</label>
-              <input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" required style={styles.formInput} />
+            <div style={s.formGroup}>
+              <label style={s.formLabel}>Phone Number *</label>
+              <input name="phone" type="tel" value={form.phone} onChange={handleChange}
+                placeholder="+91 XXXXX XXXXX" required style={s.formInput} />
             </div>
           </div>
-
-          <div style={styles.formRow}>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Email Address</label>
-              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="your@email.com" style={styles.formInput} />
+          <div style={s.formRow}>
+            <div style={s.formGroup}>
+              <label style={s.formLabel}>Email Address</label>
+              <input name="email" type="email" value={form.email} onChange={handleChange}
+                placeholder="your@email.com" style={s.formInput} />
             </div>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Department *</label>
-              <select name="dept" value={form.dept} onChange={handleChange} required style={styles.formInput}>
-                <option value="">Select Department</option>
-                {depts.map((d) => <option key={d}>{d}</option>)}
+            <div style={s.formGroup}>
+              <label style={s.formLabel}>Primary Concern *</label>
+              <select name="concern" value={form.concern} onChange={handleChange}
+                required style={s.formInput}>
+                <option value="">Select Your Concern</option>
+                {concerns.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
           </div>
-
-          <div style={styles.formRow}>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Preferred Date *</label>
-              <input name="date" type="date" value={form.date} min={today} onChange={handleChange} required style={styles.formInput} />
+          <div style={s.formRow}>
+            <div style={s.formGroup}>
+              <label style={s.formLabel}>Preferred Date *</label>
+              <input name="date" type="date" value={form.date} min={today}
+                onChange={handleChange} required style={s.formInput} />
             </div>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Preferred Time *</label>
-              <select name="time" value={form.time} onChange={handleChange} required style={styles.formInput}>
+            <div style={s.formGroup}>
+              <label style={s.formLabel}>Preferred Time *</label>
+              <select name="time" value={form.time} onChange={handleChange}
+                required style={s.formInput}>
                 <option value="">Select Time Slot</option>
-                {timeSlots.map((t) => <option key={t}>{t}</option>)}
+                {slots.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
           </div>
-
-          <div style={{ ...styles.formGroup, marginBottom: 18 }}>
-            <label style={styles.formLabel}>Message / Symptoms</label>
-            <textarea name="msg" value={form.msg} onChange={handleChange} rows={4} placeholder="Describe your symptoms or any special requirements..." style={{ ...styles.formInput, resize: "vertical" }} />
+          <div style={{ ...s.formGroup, marginBottom:18 }}>
+            <label style={s.formLabel}>Tell Us More (optional)</label>
+            <textarea name="msg" value={form.msg} onChange={handleChange}
+              rows={4} placeholder="Describe your concern, skin type, or any allergies..."
+              style={{ ...s.formInput, resize:"vertical" }} />
           </div>
-
-          <button onClick={handleSubmit} style={{ ...styles.btnPrimary, width: "100%", fontSize: 16, padding: 14 }}>
-            Submit Appointment Request
+          <button onClick={handleSubmit} disabled={submitting}
+            style={{ ...s.btnPrimary, width:"100%", fontSize:16, padding:14, border:"none",
+              opacity: submitting ? 0.7 : 1, cursor: submitting ? "wait" : "pointer" }}>
+            {submitting ? "Submitting..." : "Request Appointment"}
           </button>
-
           {success && (
-            <div style={styles.successMsg}>
-              ✅ Thank you! Your request has been submitted. We will contact you shortly.
+            <div style={s.successMsg}>
+              ✦ Thank you! Your consultation request is confirmed. We'll reach out within 2 hours.
+            </div>
+          )}
+          {errorMsg && (
+            <div style={{ ...s.successMsg, background:"#fde8e8", border:"1px solid #f1b3b3", color:"#a32020" }}>
+              ⚠ {errorMsg}
             </div>
           )}
         </div>
@@ -655,20 +705,19 @@ function Appointment() {
 // ── Map ───────────────────────────────────────────────────────────────
 function Contact() {
   return (
-    <section id="contact" style={styles.contact}>
-      <div style={styles.sectionTitle}>
-        <h2 style={styles.sectionTitleH2}>Find Us</h2>
-        <p style={styles.sectionTitleP}>Conveniently located in the heart of Chennai</p>
+    <section id="contact" style={s.contact}>
+      <div style={s.sectionTitle}>
+        <h2 style={s.sectionH2}>Find Us</h2>
+        <p style={s.sectionP}>Conveniently located in Anna Nagar, Chennai</p>
+        <div style={s.sectionLine}></div>
       </div>
-      <div style={styles.mapWrap}>
+      <div style={s.mapWrap}>
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.8!2d80.2707!3d13.0478!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTPCsDAyJzUyIk4!5e0!3m2!1sen!2sin!4v1"
-          width="100%"
-          height="420"
-          style={{ border: 0, display: "block" }}
-          allowFullScreen
-          loading="lazy"
-          title="MediCare Clinic Location"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.3!2d80.2107!3d13.0878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTPCsDA1JzE2Ik4!5e0!3m2!1sen!2sin!4v1"
+          width="100%" height="420"
+          style={{ border:0, display:"block" }}
+          allowFullScreen loading="lazy"
+          title="Devs Hair and Skin Clinic Location"
         />
       </div>
     </section>
@@ -677,114 +726,345 @@ function Contact() {
 
 // ── Footer ────────────────────────────────────────────────────────────
 function Footer({ onNav }) {
-  const quickLinks = ["home", "about", "doctors", "services", "appointment"];
-  const serviceLinks = ["General Medicine", "Cardiology", "Pediatrics", "Dental Care", "Lab Tests"];
-
+  const quickLinks = [
+    { label:"Home", id:"home" }, { label:"About Us", id:"about" },
+    { label:"Our Specialists", id:"specialists" }, { label:"Services", id:"services" },
+    { label:"Book Consultation", id:"appointment" },
+  ];
+  const treatments = [
+    "Acne & Scar Treatment", "Hair Loss & PRP", "Laser Hair Removal",
+    "Anti-Ageing & Botox", "Skin Brightening",
+  ];
   return (
-    <footer style={styles.footer}>
-      <div style={styles.footerGrid}>
+    <footer style={s.footer}>
+      <div style={s.footerGrid}>
         <div>
-          <h3 style={styles.footerColH3}>🏥 MediCare Clinic</h3>
-          <p style={styles.footerColP}>Providing quality healthcare to the community since 2014. Your health is our top priority.</p>
+          <h3 style={s.footerH3}>✦ Devs Hair &amp; Skin Clinic</h3>
+          <p style={s.footerP}>Chennai's trusted destination for dermatology, trichology, and aesthetic medicine since 2016.</p>
+          <p style={{ ...s.footerP, color:GOLD }}>IADVL Member · ISO Certified Clinic</p>
         </div>
         <div>
-          <h3 style={styles.footerColH3}>Quick Links</h3>
-          <ul style={styles.footerLinkUl}>
-            {quickLinks.map((l) => (
-              <li key={l} style={styles.footerLinkLi}>
-                <a href={`#${l}`} onClick={(e) => { e.preventDefault(); onNav(l); }} style={styles.footerLinkA}>
-                  {l.charAt(0).toUpperCase() + l.slice(1)}
+          <h3 style={s.footerH3}>Quick Links</h3>
+          <ul style={s.footerUl}>
+            {quickLinks.map(l => (
+              <li key={l.id} style={s.footerLi}>
+                <a href={`#${l.id}`} onClick={e => { e.preventDefault(); onNav(l.id); }} style={s.footerA}>
+                  {l.label}
                 </a>
               </li>
             ))}
           </ul>
         </div>
         <div>
-          <h3 style={styles.footerColH3}>Our Services</h3>
-          <ul style={styles.footerLinkUl}>
-            {serviceLinks.map((s) => (
-              <li key={s} style={styles.footerLinkLi}>
-                <a href="#services" onClick={(e) => { e.preventDefault(); onNav("services"); }} style={styles.footerLinkA}>{s}</a>
+          <h3 style={s.footerH3}>Treatments</h3>
+          <ul style={s.footerUl}>
+            {treatments.map(t => (
+              <li key={t} style={s.footerLi}>
+                <a href="#services" onClick={e => { e.preventDefault(); onNav("services"); }} style={s.footerA}>{t}</a>
               </li>
             ))}
           </ul>
         </div>
         <div>
-          <h3 style={styles.footerColH3}>Contact Us</h3>
-          <p style={styles.footerColP}>📍 123, Main Road, Chennai – 600001</p>
-          <p style={styles.footerColP}>📞 +91 98765 43210</p>
-          <p style={styles.footerColP}>✉️ info@medicareclinic.com</p>
+          <h3 style={s.footerH3}>Contact</h3>
+          <p style={s.footerP}>📍 45, Anna Nagar 2nd Avenue<br />Chennai – 600 040</p>
+          <p style={s.footerP}>📞 +91 98400 55678</p>
+          <p style={s.footerP}>✉️ vipluved@gmail.com</p>
           <br />
-          <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" style={styles.waBtn}>
+          <a href="https://wa.me/919840055678" target="_blank" rel="noreferrer" style={s.waBtn}>
             💬 WhatsApp Us
           </a>
         </div>
       </div>
-      <div style={styles.footerBottom}>
-        <p>© 2025 MediCare Clinic. All Rights Reserved.</p>
+      <div style={s.footerBottom}>
+        <p>© 2025 Devs Hair &amp; Skin Clinic. All Rights Reserved. · Chennai, Tamil Nadu</p>
       </div>
     </footer>
   );
 }
 
-// ── Main App ──────────────────────────────────────────────────────────
+// ── Consultation Splash Modal ─────────────────────────────────────────
+function ConsultationSplash({ onClose }) {
+  const [form, setForm] = useState({ name:"", phone:"", email:"", concern:"", date:"", time:"", msg:"" });
+  const [success, setSuccess] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const today = new Date().toISOString().split("T")[0];
+
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setErrorMsg("");
+    if (!form.name || !form.phone || !form.concern || !form.date || !form.time) {
+      alert("Please fill in all required fields marked with *");
+      return;
+    }
+    setSubmitting(true);
+    const result = await submitAppointment(form);
+    setSubmitting(false);
+
+    if (result.ok) {
+      setSuccess(true);
+      setForm({ name:"", phone:"", email:"", concern:"", date:"", time:"", msg:"" });
+      setTimeout(() => { triggerClose(); }, 4000);
+    } else {
+      const detail = result.fieldErrors
+        ? Object.values(result.fieldErrors).join(" ")
+        : "";
+      setErrorMsg(`${result.message} ${detail}`.trim());
+    }
+  };
+
+  const triggerClose = () => {
+    setClosing(true);
+    setTimeout(onClose, 400);
+  };
+
+  const concerns = [
+    "Acne & Pimples", "Hair Loss & Thinning", "Skin Pigmentation",
+    "Anti-Ageing & Botox", "Laser Hair Removal", "Skin Brightening",
+    "Psoriasis / Dermatitis", "Scalp Treatment", "Mole / Lesion Check",
+    "General Skin Consultation",
+  ];
+  const slots = [
+    "9:00 AM – 10:00 AM", "10:00 AM – 11:00 AM", "11:00 AM – 12:00 PM",
+    "2:00 PM – 3:00 PM", "3:00 PM – 4:00 PM", "4:00 PM – 5:00 PM", "5:00 PM – 7:00 PM",
+  ];
+
+  return (
+    <div style={{
+      position:"fixed", inset:0, zIndex:2000,
+      background:"rgba(26,13,18,0.72)",
+      display:"flex", alignItems:"center", justifyContent:"center",
+      padding:"16px",
+      backdropFilter:"blur(4px)",
+      opacity: closing ? 0 : 1,
+      transition:"opacity 0.4s ease",
+    }}>
+      <div style={{
+        background:"#fff", borderRadius:22,
+        width:"100%", maxWidth:820,
+        maxHeight:"92vh", overflowY:"auto",
+        boxShadow:"0 24px 80px rgba(181,68,110,.28)",
+        position:"relative",
+        transform: closing ? "scale(0.96)" : "scale(1)",
+        transition:"transform 0.4s ease, opacity 0.4s ease",
+        animation:"splashIn 0.4s cubic-bezier(.34,1.56,.64,1)",
+      }}>
+        {/* Header strip */}
+        <div style={{
+          background:`linear-gradient(135deg, ${R} 0%, ${RD} 100%)`,
+          padding:"28px 36px 24px",
+          borderRadius:"22px 22px 0 0",
+          display:"flex", alignItems:"flex-start", justifyContent:"space-between",
+          gap:16,
+        }}>
+          <div>
+            <p style={{ color:"rgba(255,255,255,0.8)", fontSize:12, letterSpacing:"2px",
+              textTransform:"uppercase", fontWeight:700, marginBottom:6 }}>
+              ✦ Welcome to Devs Hair &amp; Skin Clinic
+            </p>
+            <h2 style={{ color:"#fff", fontSize:"clamp(20px,4vw,28px)", fontWeight:800,
+              lineHeight:1.2, margin:0 }}>
+              Book Your Free Consultation
+            </h2>
+            <p style={{ color:"rgba(255,255,255,0.82)", fontSize:14, marginTop:8, lineHeight:1.5 }}>
+              Tell us your concern — we'll confirm your slot within 2 hours.
+            </p>
+          </div>
+          <button onClick={triggerClose} style={{
+            background:"rgba(255,255,255,0.18)", border:"none", color:"#fff",
+            width:36, height:36, borderRadius:"50%", fontSize:18,
+            cursor:"pointer", flexShrink:0, display:"flex",
+            alignItems:"center", justifyContent:"center",
+            fontWeight:700, marginTop:2,
+          }} title="Skip & go to website">✕</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding:"28px 36px 36px" }}>
+          {success ? (
+            <div style={{ textAlign:"center", padding:"40px 20px" }}>
+              <div style={{ fontSize:56, marginBottom:16 }}>✦</div>
+              <h3 style={{ fontSize:24, color:R, fontWeight:800, marginBottom:10 }}>
+                Consultation Requested!
+              </h3>
+              <p style={{ color:MUTED, fontSize:16, lineHeight:1.7 }}>
+                Thank you! Our team will call you within 2 hours to confirm your appointment.<br />
+                Taking you to our website now…
+              </p>
+              <div style={{ marginTop:24, height:4, background:RL, borderRadius:4, overflow:"hidden" }}>
+                <div style={{
+                  height:"100%", background:R, borderRadius:4,
+                  animation:"progressBar 3.8s linear forwards",
+                }}/>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={s.formRow}>
+                <div style={s.formGroup}>
+                  <label style={s.formLabel}>Full Name *</label>
+                  <input name="name" value={form.name} onChange={handleChange}
+                    placeholder="Your full name" required style={s.formInput} />
+                </div>
+                <div style={s.formGroup}>
+                  <label style={s.formLabel}>Phone Number *</label>
+                  <input name="phone" type="tel" value={form.phone} onChange={handleChange}
+                    placeholder="+91 XXXXX XXXXX" required style={s.formInput} />
+                </div>
+              </div>
+              <div style={s.formRow}>
+                <div style={s.formGroup}>
+                  <label style={s.formLabel}>Email Address</label>
+                  <input name="email" type="email" value={form.email} onChange={handleChange}
+                    placeholder="your@email.com" style={s.formInput} />
+                </div>
+                <div style={s.formGroup}>
+                  <label style={s.formLabel}>Primary Concern *</label>
+                  <select name="concern" value={form.concern} onChange={handleChange}
+                    required style={s.formInput}>
+                    <option value="">Select Your Concern</option>
+                    {concerns.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={s.formRow}>
+                <div style={s.formGroup}>
+                  <label style={s.formLabel}>Preferred Date *</label>
+                  <input name="date" type="date" value={form.date} min={today}
+                    onChange={handleChange} required style={s.formInput} />
+                </div>
+                <div style={s.formGroup}>
+                  <label style={s.formLabel}>Preferred Time *</label>
+                  <select name="time" value={form.time} onChange={handleChange}
+                    required style={s.formInput}>
+                    <option value="">Select Time Slot</option>
+                    {slots.map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{ ...s.formGroup, marginBottom:20 }}>
+                <label style={s.formLabel}>Tell Us More (optional)</label>
+                <textarea name="msg" value={form.msg} onChange={handleChange}
+                  rows={3} placeholder="Describe your skin/hair concern, any allergies..."
+                  style={{ ...s.formInput, resize:"vertical" }} />
+              </div>
+
+              {errorMsg && (
+                <div style={{ marginBottom:16, padding:12, background:"#fde8e8",
+                  border:"1px solid #f1b3b3", color:"#a32020", borderRadius:8, fontSize:14 }}>
+                  ⚠ {errorMsg}
+                </div>
+              )}
+
+              <div style={{ display:"flex", gap:14, flexWrap:"wrap", alignItems:"center" }}>
+                <button onClick={handleSubmit} disabled={submitting}
+                  style={{ ...s.btnPrimary, fontSize:16, padding:"14px 32px", border:"none", flex:1, minWidth:180,
+                    opacity: submitting ? 0.7 : 1, cursor: submitting ? "wait" : "pointer" }}>
+                  {submitting ? "Submitting..." : "Request Consultation"}
+                </button>
+                <button onClick={triggerClose}
+                  style={{ ...s.btnOutline, fontSize:14, padding:"13px 20px", flex:"0 0 auto" }}>
+                  Skip, explore website →
+                </button>
+              </div>
+
+              <p style={{ marginTop:14, fontSize:12, color:MUTED, textAlign:"center" }}>
+                🔒 Your information is confidential and never shared with third parties.
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [showTop, setShowTop] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setShowTop(window.scrollY > 300);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setShowTop(window.scrollY > 300);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const scrollToSection = (id) => {
+  // Lock body scroll while splash is open
+  useEffect(() => {
+    document.body.style.overflow = showSplash ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [showSplash]);
+
+  const scrollTo = id => {
     const el = document.getElementById(id);
-    if (el) window.scrollTo({ top: el.offsetTop - 70, behavior: "smooth" });
+    if (el) window.scrollTo({ top: el.offsetTop - 70, behavior:"smooth" });
   };
 
   return (
-    <div style={styles.body}>
+    <div style={{ fontFamily:"'Segoe UI', Arial, sans-serif", color:TEXT, lineHeight:1.6, overflowX:"hidden", margin:0, padding:0 }}>
       <style>{`
-        * { margin:0; padding:0; box-sizing:border-box; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         html { scroll-behavior:smooth; }
         body { overflow-x:hidden; }
         a { text-decoration:none; }
         ul { list-style:none; }
         img { max-width:100%; display:block; }
 
-        @media (max-width: 900px) {
-          .nav-desktop { display: none !important; }
-          .nav-hamburger { display: block !important; }
+        @keyframes splashIn {
+          from { opacity:0; transform:scale(0.92) translateY(24px); }
+          to   { opacity:1; transform:scale(1) translateY(0); }
         }
-        @media (min-width: 901px) {
-          .nav-hamburger { display: none !important; }
-          .nav-desktop { display: flex !important; }
+        @keyframes progressBar {
+          from { width:0%; }
+          to   { width:100%; }
         }
-        @media (max-width: 600px) {
-          #home { flex-direction: column !important; padding: 40px 4% 50px !important; text-align: center; }
-          .hero-btns { justify-content: center !important; }
+
+        @media (max-width:900px) {
+          .nav-desktop { display:none !important; }
+          .nav-hamburger { display:block !important; }
+        }
+        @media (min-width:901px) {
+          .nav-hamburger { display:none !important; }
+          .nav-desktop { display:flex !important; }
+        }
+        @media (max-width:600px) {
+          #home { flex-direction:column !important; padding:40px 4% 50px !important; text-align:center; }
+          #home .hero-btns { justify-content:center !important; }
+          #about .about-content { flex-direction:column !important; gap:24px !important; }
+        }
+        input:focus, select:focus, textarea:focus {
+          border-color: #b5446e !important;
+          box-shadow: 0 0 0 3px rgba(181,68,110,0.12);
         }
       `}</style>
 
-      <Navbar onNav={scrollToSection} />
-      <Hero onNav={scrollToSection} />
+      {/* Splash consultation modal — shown on first visit */}
+      {showSplash && <ConsultationSplash onClose={() => setShowSplash(false)} />}
+
+      {/* Main website (always rendered behind, visible after splash closes) */}
+      <Navbar onNav={scrollTo} />
+      <Hero onNav={scrollTo} />
       <Stats />
-      <About onNav={scrollToSection} />
-      <Doctors onNav={scrollToSection} />
+      <About onNav={scrollTo} />
+      <Specialists onNav={scrollTo} />
       <Services />
+      <WhyUs />
       <Appointment />
       <Contact />
-      <Footer onNav={scrollToSection} />
+      <Footer onNav={scrollTo} />
 
       {showTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          style={styles.backToTop}
-          title="Back to top"
-        >
+        <button onClick={() => window.scrollTo({ top:0, behavior:"smooth" })}
+          style={s.backToTop} title="Back to top">
           ⬆
         </button>
       )}
     </div>
   );
 }
+
