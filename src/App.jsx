@@ -47,23 +47,23 @@ async function submitAppointment(form) {
 
 
 // ── Brand Palette ─────────────────────────────────────────────────────
-// Primary: Deep Rose  #b5446e  (mauve-rose, luxe skin/beauty)
-// Dark:    Burgundy   #8b2f52
-// Light:   Blush      #fce8f0
-// Accent:  Warm Gold  #c9963a  (premium feel)
-// BG:      Soft Cream #fdf7f9
-// Surface: Pure White #ffffff
-// Text:    Charcoal   #1e1e1e
-// Muted:   Warm Gray  #6b6070
+// Primary: Deep Purple  #6c3fc4  (rich royal purple)
+// Dark:    Dark Purple  #4e2d96
+// Light:   Soft Lavender #f0ebff
+// Accent:  Warm Gold    #c9963a  (premium feel)
+// BG:      Soft White   #fafafa
+// Surface: Pure White   #ffffff
+// Text:    Charcoal     #1e1e1e
+// Muted:   Warm Gray    #6b6070
 
-const R   = "#b5446e";   // primary rose
-const RD  = "#8b2f52";   // dark rose
-const RL  = "#fce8f0";   // light blush
+const R   = "#6c3fc4";   // primary purple
+const RD  = "#4e2d96";   // dark purple
+const RL  = "#f0ebff";   // light lavender
 const GOLD= "#c9963a";   // accent gold
-const CREAM="#fdf7f9";   // page bg
+const CREAM="#fafafa";   // page bg
 const TEXT = "#1e1e1e";
 const MUTED= "#6b6070";
-const BORDER="#e8d5df";
+const BORDER="#d8ccf5";
 const GREEN= "#25d366";
 
 const s = {
@@ -71,7 +71,7 @@ const s = {
   navbar: {
     display:"flex", justifyContent:"space-between", alignItems:"center",
     padding:"0 5%", height:68,
-    background:"#fff", boxShadow:"0 2px 16px rgba(181,68,110,.10)",
+    background:"#fff", boxShadow:"0 2px 16px rgba(108,63,196,.10)",
     position:"sticky", top:0, zIndex:1000,
   },
   logo: { fontSize:20, fontWeight:800, color:R, whiteSpace:"nowrap", letterSpacing:"-0.3px" },
@@ -103,7 +103,7 @@ const s = {
   hero: {
     display:"flex", alignItems:"center", justifyContent:"space-between",
     gap:40, padding:"70px 5%",
-    background:`linear-gradient(135deg, #fce8f0 0%, #fdf7f9 55%, #fff8fb 100%)`,
+    background:`linear-gradient(135deg, #f0ebff 0%, #fafafa 55%, #f8f5ff 100%)`,
     flexWrap:"wrap",
   },
   heroText: { flex:1, minWidth:0 },
@@ -123,7 +123,7 @@ const s = {
     display:"inline-flex", alignItems:"center", gap:8,
     background:"#fff", border:`1px solid ${BORDER}`,
     borderRadius:40, padding:"8px 16px", marginTop:20,
-    fontSize:13, color:MUTED, boxShadow:"0 2px 12px rgba(181,68,110,.08)",
+    fontSize:13, color:MUTED, boxShadow:"0 2px 12px rgba(108,63,196,.08)",
   },
   heroBadgeDot: { width:8, height:8, borderRadius:"50%", background:"#4caf50", display:"inline-block" },
 
@@ -168,7 +168,7 @@ const s = {
   },
   specCard: {
     background:"#fff", borderRadius:18, overflow:"hidden",
-    boxShadow:"0 4px 20px rgba(181,68,110,.09)",
+    boxShadow:"0 4px 20px rgba(108,63,196,.09)",
     textAlign:"center", transition:"transform .3s, box-shadow .3s",
   },
   specImgWrap: { position:"relative", overflow:"hidden" },
@@ -187,13 +187,13 @@ const s = {
   featuredDocWrap: {
     display:"flex", gap:48, alignItems:"center",
     background:"#fff", borderRadius:24, padding:"40px",
-    boxShadow:"0 8px 36px rgba(181,68,110,.10)",
+    boxShadow:"0 8px 36px rgba(108,63,196,.10)",
     maxWidth:920, margin:"0 auto", flexWrap:"wrap",
   },
   featuredDocImgCol: { flex:"0 0 260px" },
   featuredDocImg: {
     width:260, height:260, borderRadius:20, objectFit:"cover",
-    boxShadow:"0 10px 30px rgba(181,68,110,.18)", margin:"0 auto",
+    boxShadow:"0 10px 30px rgba(108,63,196,.18)", margin:"0 auto",
   },
   featuredDocInfo: { flex:1, minWidth:260 },
   featuredDocName: { fontSize:"clamp(20px,3vw,26px)", color:TEXT, fontWeight:800, marginBottom:6 },
@@ -212,7 +212,7 @@ const s = {
   },
   servCardHover: {
     background:RL, borderColor:R, transform:"translateY(-5px)",
-    boxShadow:`0 10px 28px rgba(181,68,110,.13)`,
+    boxShadow:`0 10px 28px rgba(108,63,196,.13)`,
   },
   servIcon: { fontSize:40, marginBottom:14 },
   servH3: { fontSize:15, marginBottom:8, color:TEXT, fontWeight:800 },
@@ -224,7 +224,7 @@ const s = {
   whyCard: {
     background:"#fff", borderRadius:16, padding:"28px 22px",
     borderLeft:`4px solid ${R}`, borderRadius:0,
-    boxShadow:"0 2px 14px rgba(181,68,110,.07)",
+    boxShadow:"0 2px 14px rgba(108,63,196,.07)",
   },
   whyNum: { fontSize:36, fontWeight:800, color:RL, lineHeight:1, marginBottom:8 },
   whyNumInner: { color:R },
@@ -236,7 +236,7 @@ const s = {
   apptBox: {
     display:"flex", gap:40,
     background:"#fff", borderRadius:20,
-    padding:"48px 44px", boxShadow:"0 8px 36px rgba(181,68,110,.10)",
+    padding:"48px 44px", boxShadow:"0 8px 36px rgba(108,63,196,.10)",
     flexWrap:"wrap",
   },
   apptInfo: {
@@ -261,16 +261,16 @@ const s = {
     width:"100%", boxSizing:"border-box",
   },
   successMsg: {
-    marginTop:14, padding:14, background:"#fce8f0",
+    marginTop:14, padding:14, background:"#f0ebff",
     border:`1px solid ${R}`, color:RD, borderRadius:8, fontSize:15,
   },
 
   // Map
   contact: { padding:"80px 5%", background:"#fff" },
-  mapWrap: { borderRadius:16, overflow:"hidden", boxShadow:"0 4px 20px rgba(181,68,110,.10)" },
+  mapWrap: { borderRadius:16, overflow:"hidden", boxShadow:"0 4px 20px rgba(108,63,196,.10)" },
 
   // Footer
-  footer: { background:"#1a0d12", color:"#b8a8b0", padding:"60px 5% 22px" },
+  footer: { background:"#1a0d2e", color:"#b8a8b0", padding:"60px 5% 22px" },
   footerGrid: {
     display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",
     gap:40, marginBottom:40,
@@ -282,14 +282,14 @@ const s = {
   footerA: { color:"#b8a8b0", fontSize:14, textDecoration:"none" },
   footerBottom: {
     textAlign:"center", paddingTop:20,
-    borderTop:"1px solid #2d1520", fontSize:13, color:"#554048",
+    borderTop:"1px solid #1e1040", fontSize:13, color:"#3d2a6e",
   },
 
   backToTop: {
     position:"fixed", bottom:24, right:24,
     background:R, color:"#fff", border:"none", borderRadius:"50%",
     width:48, height:48, fontSize:20, cursor:"pointer", zIndex:998,
-    boxShadow:"0 4px 16px rgba(181,68,110,.4)",
+    boxShadow:"0 4px 16px rgba(108,63,196,.4)",
   },
 };
 
@@ -332,12 +332,12 @@ function Navbar({ onNav }) {
 
       {open && (
         <div style={{ display:"flex", flexDirection:"column", position:"fixed", top:68, left:0, right:0,
-          background:"#fff", boxShadow:"0 8px 24px rgba(181,68,110,.12)", zIndex:999, padding:"8px 0 20px" }}>
+          background:"#fff", boxShadow:"0 8px 24px rgba(108,63,196,.12)", zIndex:999, padding:"8px 0 20px" }}>
           {links.map(l => (
             <a key={l.id} href={`#${l.id}`}
               onClick={e => { e.preventDefault(); setOpen(false); onNav(l.id); }}
               style={{ padding:"14px 5%", fontSize:16, fontWeight:500, color:"#333",
-                borderBottom:"1px solid #f0eaec", textDecoration:"none" }}>
+                borderBottom:"1px solid #e8e0f5", textDecoration:"none" }}>
               {l.label}
             </a>
           ))}
@@ -465,7 +465,7 @@ function About({ onNav }) {
 // ── Specialist (single, featured) ───────────────────────────────────
 function Specialists({ onNav }) {
   const doc = {
-    name:"Dr. Devika Anand",
+    name:"Dr. Anand",
     role:"Founder & Chief Dermatologist",
     exp:"14 Years Experience",
     qual:"MD Dermatology, AIIMS · IADVL Member · Fellowship in Aesthetic Medicine",
@@ -836,7 +836,7 @@ function ConsultationSplash({ onClose }) {
   return (
     <div style={{
       position:"fixed", inset:0, zIndex:2000,
-      background:"rgba(26,13,18,0.72)",
+      background:"rgba(15,10,46,0.72)",
       display:"flex", alignItems:"center", justifyContent:"center",
       padding:"16px",
       backdropFilter:"blur(4px)",
@@ -847,7 +847,7 @@ function ConsultationSplash({ onClose }) {
         background:"#fff", borderRadius:22,
         width:"100%", maxWidth:820,
         maxHeight:"92vh", overflowY:"auto",
-        boxShadow:"0 24px 80px rgba(181,68,110,.28)",
+        boxShadow:"0 24px 80px rgba(108,63,196,.28)",
         position:"relative",
         transform: closing ? "scale(0.96)" : "scale(1)",
         transition:"transform 0.4s ease, opacity 0.4s ease",
@@ -1038,8 +1038,8 @@ export default function App() {
           #about .about-content { flex-direction:column !important; gap:24px !important; }
         }
         input:focus, select:focus, textarea:focus {
-          border-color: #b5446e !important;
-          box-shadow: 0 0 0 3px rgba(181,68,110,0.12);
+          border-color: #6c3fc4 !important;
+          box-shadow: 0 0 0 3px rgba(108,63,196,0.12);
         }
       `}</style>
 
@@ -1067,4 +1067,3 @@ export default function App() {
     </div>
   );
 }
-
