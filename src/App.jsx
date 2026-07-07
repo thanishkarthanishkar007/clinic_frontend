@@ -465,7 +465,7 @@ function About({ onNav }) {
 // ── Specialist (single, featured) ───────────────────────────────────
 function Specialists({ onNav }) {
   const doc = {
-    name:"Dr. Anand",
+    name:"Dr.Anand",
     role:"Founder & Chief Dermatologist",
     exp:"14 Years Experience",
     qual:"MD Dermatology, AIIMS · IADVL Member · Fellowship in Aesthetic Medicine",
