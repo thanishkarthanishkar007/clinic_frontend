@@ -569,7 +569,8 @@ function Appointment() {
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split("T")[0];
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async e => {
@@ -577,6 +578,10 @@ function Appointment() {
     setErrorMsg("");
     if (!form.name || !form.phone || !form.concern || !form.date || !form.time) {
       alert("Please fill in all required fields marked with *");
+      return;
+    }
+    if (form.date < today) {
+      setErrorMsg("Preferred date cannot be in the past. Please select today or a future date.");
       return;
     }
     setSubmitting(true);
@@ -692,7 +697,7 @@ function Appointment() {
             </div>
           )}
           {errorMsg && (
-            <div style={{ ...s.successMsg, background:"#fde8e8", border:"1px solid #f1b3b3", color:"#a32020" }}>
+            <div style={{ ...s.successMsg, background:"#ede8ff", border:"1px solid #a98df5", color:"#4e2d96" }}>
               ⚠ {errorMsg}
             </div>
           )}
@@ -790,7 +795,8 @@ function ConsultationSplash({ onClose }) {
   const [closing, setClosing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split("T")[0];
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -802,6 +808,11 @@ function ConsultationSplash({ onClose }) {
       return;
     }
     setSubmitting(true);
+    if (form.date < today) {
+      setSubmitting(false);
+      setErrorMsg("Preferred date cannot be in the past. Please select today or a future date.");
+      return;
+    }
     const result = await submitAppointment(form);
     setSubmitting(false);
 
@@ -954,8 +965,8 @@ function ConsultationSplash({ onClose }) {
               </div>
 
               {errorMsg && (
-                <div style={{ marginBottom:16, padding:12, background:"#fde8e8",
-                  border:"1px solid #f1b3b3", color:"#a32020", borderRadius:8, fontSize:14 }}>
+                <div style={{ marginBottom:16, padding:12, background:"#ede8ff",
+                  border:"1px solid #a98df5", color:"#4e2d96", borderRadius:8, fontSize:14 }}>
                   ⚠ {errorMsg}
                 </div>
               )}
