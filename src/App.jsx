@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import heroImg from "./assets/devs.imge.jpeg";
+import femaleDoctor from "./assets/female docter img.jpeg";
 
 // ── Clinic Real Photos ───────────────────────────────────────────────
 const CLINIC_IMAGES = [
@@ -368,7 +369,7 @@ function Hero({ onNav }) {
   return (
     <section id="home" style={s.hero}>
       <div style={s.heroText}>
-        <span style={s.heroEyebrow}>Chennai's Trusted Skin &amp; Hair Experts</span>
+        <span style={s.heroEyebrow}>Erode Trusted Skin &amp; Hair Experts</span>
         <h1 style={s.heroH1}>
           Glow from Within,<br />
           <span style={s.heroSpan}>Look Your Best</span>
@@ -403,20 +404,23 @@ function Hero({ onNav }) {
 
 // ── Stats ─────────────────────────────────────────────────────────────
 function Stats() {
-  const data = [
-    { num:"8000+", label:"Happy Patients" },
-    { num:"14+", label:"Years Experience" },
-    { num:"30+", label:"Advanced Treatments" },
-    { num:"4.9★", label:"Patient Rating" },
-  ];
   return (
-    <div style={s.stats}>
-      {data.map(d => (
-        <div key={d.label} style={s.stat}>
-          <h2 style={s.statH2}>{d.num}</h2>
-          <p style={s.statP}>{d.label}</p>
-        </div>
-      ))}
+    <div style={{
+      background:"#6c3fc4",
+      padding:"32px 5%",
+      textAlign:"center",
+    }}>
+      <p style={{
+        margin:0,
+        color:"#fff",
+        fontSize:"clamp(16px,2.5vw,22px)",
+        fontWeight:600,
+        letterSpacing:"0.5px",
+        fontStyle:"italic",
+        lineHeight:1.6,
+      }}>
+        "Enhancing your natural beauty with science and care. One treatment at a time."
+      </p>
     </div>
   );
 }
@@ -512,18 +516,11 @@ function ClinicCarousel() {
 
 // ── About ─────────────────────────────────────────────────────────────
 function About({ onNav }) {
-  const points = [
-    "IADVL-certified Dermatologists & Trichologists",
-    "US-FDA approved treatment technologies",
-    "Personalised skincare & haircare regimens",
-    "Sterile, clinical-grade treatment rooms",
-    "Post-treatment care & follow-up support",
-  ];
   return (
     <section id="about" style={s.about}>
       <div style={s.sectionTitle}>
         <h2 style={s.sectionH2}>About Our Clinic</h2>
-        <p style={s.sectionP}>Where clinical expertise meets aesthetic excellence</p>
+        <p style={s.sectionP}>Your Trusted Skin &amp; Hair Care Experts</p>
         <div style={s.sectionLine}></div>
       </div>
       <div style={s.aboutContent}>
@@ -531,24 +528,49 @@ function About({ onNav }) {
           <ClinicCarousel />
         </div>
         <div style={s.aboutText}>
-          <span style={s.aboutTag}>Est. 2016 · Chennai</span>
+          <span style={s.aboutTag}>Est. 2026 · Erode</span>
           <h3 style={s.aboutH3}>A Clinic Built on Science &amp; Care</h3>
           <p style={s.aboutP}>
-            Devs Hair &amp; Skin Clinic has been transforming lives in Chennai since 2016.
-            Our team of board-certified dermatologists and trichologists combine the latest
-            medical science with a patient-first philosophy.
+            We are dedicated to providing comprehensive skin and hair care solutions tailored
+            to every individual's unique needs. Our experienced dermatologists and specialists
+            use scientifically proven treatments and the latest technology to deliver safe,
+            effective, and long-lasting results.
           </p>
           <p style={s.aboutP}>
-            Whether you need acne treatment, hair restoration, cosmetic procedures, or a full
-            skin analysis — we deliver results with transparency and precision.
+            Whether you're struggling with acne, pigmentation, hair loss, aging concerns, or
+            simply want healthier skin, our team is committed to helping you achieve your
+            beauty goals with confidence.
           </p>
-          <ul style={s.aboutList}>
-            {points.map(p => (
-              <li key={p} style={s.aboutLi}>
-                <span style={s.checkmark}>✦</span> {p}
-              </li>
-            ))}
-          </ul>
+
+          <div style={{ display:"flex", gap:20, marginBottom:26, flexWrap:"wrap" }}>
+            <div style={{
+              flex:1, minWidth:180, background:"#f0ebff",
+              borderLeft:"4px solid #6c3fc4", borderRadius:"0 10px 10px 0",
+              padding:"14px 16px",
+            }}>
+              <p style={{ margin:"0 0 4px 0", fontWeight:800, fontSize:14, color:"#4e2d96" }}>
+                Our Mission
+              </p>
+              <p style={{ margin:0, fontSize:13, color:"#6b6070", lineHeight:1.65 }}>
+                To provide world-class dermatology and hair care treatments that improve
+                confidence, wellness, and quality of life.
+              </p>
+            </div>
+            <div style={{
+              flex:1, minWidth:180, background:"#f0ebff",
+              borderLeft:"4px solid #6c3fc4", borderRadius:"0 10px 10px 0",
+              padding:"14px 16px",
+            }}>
+              <p style={{ margin:"0 0 4px 0", fontWeight:800, fontSize:14, color:"#4e2d96" }}>
+                Our Vision
+              </p>
+              <p style={{ margin:0, fontSize:13, color:"#6b6070", lineHeight:1.65 }}>
+                To become the most trusted destination for advanced skin and hair care
+                through innovation, expertise, and compassionate patient care.
+              </p>
+            </div>
+          </div>
+
           <a href="#appointment" onClick={e => { e.preventDefault(); onNav("appointment"); }} style={s.btnPrimary}>
             Get a Free Skin Analysis
           </a>
@@ -561,12 +583,12 @@ function About({ onNav }) {
 // ── Specialist (single, featured) ───────────────────────────────────
 function Specialists({ onNav }) {
   const doc = {
-    name:"Dr.Anand",
-    role:"Founder & Chief Dermatologist",
+    name:"Dedicated to Your Skin & Hair Wellness",
+    role:"Our SpecialList",
     exp:"14 Years Experience",
-    qual:"MD Dermatology, AIIMS · IADVL Member · Fellowship in Aesthetic Medicine",
-    bio:"Dr. Devika Anand has helped over 8,000 patients achieve healthier skin and hair through evidence-based dermatology and cosmetic treatments. She specialises in acne management, hair restoration, anti-ageing procedures, and laser therapies.",
-    img:"https://img.freepik.com/free-vector/doctor-character-background_1270-84.jpg",
+    qual:" MD Dermatology · Aesthetic & Clinical Dermatologist · Skin & Hair Specialist",
+    bio:"Our clinic is led by a qualified medical professional who is committed to providing personalized skin and hair care. With a patient-first approach, we focus on understanding your concerns and delivering safe, effective treatments using the latest dermatology practices.",
+    img: femaleDoctor,
   };
   return (
     <section id="specialists" style={s.specialists}>
@@ -593,18 +615,57 @@ function Specialists({ onNav }) {
   );
 }
 
-// ── Services ──────────────────────────────────────────────────────────
 function Services() {
-  const list = [
-    { icon:"✨", title:"Acne & Scar Treatments", desc:"Medical-grade peels, lasers, and therapies to clear acne and fade scars effectively." },
-    { icon:"💆", title:"Hair Loss & PRP Therapy", desc:"Platelet-rich plasma, mesotherapy and scalp treatments for hair regrowth." },
-    { icon:"🌟", title:"Anti-Ageing & Botox", desc:"Botox, fillers, and skin-tightening procedures for a youthful, refreshed look." },
-    { icon:"🔬", title:"Laser Hair Removal", desc:"Permanent hair reduction with advanced diode and Nd:YAG laser technology." },
-    { icon:"🧴", title:"Skin Brightening", desc:"Chemical peels, glutathione treatments, and pigmentation correction therapies." },
-    { icon:"💊", title:"Dermatitis & Psoriasis", desc:"Evidence-based medical management for chronic skin conditions and flare-ups." },
-    { icon:"🩺", title:"Dermoscopy & Diagnosis", desc:"Advanced skin lesion analysis, mole mapping, and early cancer screening." },
-    { icon:"💅", title:"Nail & Scalp Disorders", desc:"Specialist care for fungal infections, alopecia, dandruff, and nail diseases." },
+  const boxes = [
+    {
+      icon: "✨",
+      title: "Skin Treatments",
+      color: "#6c3fc4",
+      items: [
+        "Acne & Acne Scar Treatment",
+        "Pigmentation Removal",
+        "Skin Brightening",
+        "Chemical Peel",
+        "Hydra Facial",
+        "Laser Skin Rejuvenation",
+        "Anti-Aging Treatments",
+        "Skin Tightening",
+        "Mole & Wart Removal",
+        "Dark Circle Treatment",
+      ],
+    },
+    {
+      icon: "💆",
+      title: "Hair Treatments",
+      color: "#4e2d96",
+      items: [
+        "Hair Fall Treatment",
+        "Hair Regrowth Therapy",
+        "PRP Hair Treatment",
+        "Hair Transplant Consultation",
+        "Dandruff Treatment",
+        "Scalp Care Therapy",
+        "Hair Strengthening",
+        "Hair Nourishment Programs",
+      ],
+    },
+    {
+      icon: "🌟",
+      title: "Cosmetic Procedures",
+      color: "#6c3fc4",
+      items: [
+        "Botox Consultation",
+        "Dermal Fillers",
+        "Laser Hair Reduction",
+        "Skin Polishing",
+        "Carbon Laser Facial",
+        "Microneedling",
+        "Stretch Mark Reduction",
+        "Tattoo Removal",
+      ],
+    },
   ];
+
   return (
     <section id="services" style={s.services}>
       <div style={s.sectionTitle}>
@@ -612,8 +673,72 @@ function Services() {
         <p style={s.sectionP}>Comprehensive skin &amp; hair care under one roof</p>
         <div style={s.sectionLine}></div>
       </div>
-      <div style={s.servGrid}>
-        {list.map(sv => <ServCard key={sv.title} sv={sv} />)}
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",
+        gap:24,
+      }}>
+        {boxes.map(box => (
+          <div key={box.title} style={{
+            background:"#fff",
+            borderRadius:16,
+            overflow:"hidden",
+            boxShadow:"0 4px 24px rgba(108,63,196,0.10)",
+            border:"1px solid #e8e0f5",
+            display:"flex",
+            flexDirection:"column",
+          }}>
+            {/* Header */}
+            <div style={{
+              background:box.color,
+              padding:"20px 24px",
+              display:"flex",
+              alignItems:"center",
+              gap:12,
+            }}>
+              <span style={{ fontSize:28 }}>{box.icon}</span>
+              <h3 style={{
+                margin:0,
+                color:"#fff",
+                fontSize:18,
+                fontWeight:800,
+                letterSpacing:"0.2px",
+              }}>
+                {box.title}
+              </h3>
+            </div>
+
+            {/* List */}
+            <ul style={{
+              margin:0,
+              padding:"20px 24px",
+              listStyle:"none",
+              display:"flex",
+              flexDirection:"column",
+              gap:10,
+            }}>
+              {box.items.map(item => (
+                <li key={item} style={{
+                  display:"flex",
+                  alignItems:"center",
+                  gap:10,
+                  fontSize:14,
+                  color:"#1e1e1e",
+                  lineHeight:1.5,
+                }}>
+                  <span style={{
+                    width:7,
+                    height:7,
+                    borderRadius:"50%",
+                    background:box.color,
+                    flexShrink:0,
+                  }}/>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -630,14 +755,13 @@ function ServCard({ sv }) {
     </div>
   );
 }
-
 // ── Why Choose Us ─────────────────────────────────────────────────────
 function WhyUs() {
   const items = [
-    { n:"01", title:"Science-Backed Protocols", desc:"Every treatment is evidence-based and follows internationally accepted dermatological guidelines." },
-    { n:"02", title:"Personalised Treatment Plans", desc:"We assess your unique skin type, concerns, and goals before recommending any procedure." },
-    { n:"03", title:"State-of-the-Art Technology", desc:"Our clinic is equipped with the latest lasers, RF devices, and diagnostic tools available in India." },
-    { n:"04", title:"Transparent & Ethical Care", desc:"No unnecessary upselling. We recommend only what your skin genuinely needs, explained clearly." },
+    { n:"01", title:"⭐ Expert Specialists", desc:"Experienced dermatologists providing personalized care." },
+    { n:"02", title:"🔬 Advanced Technology", desc:"Modern treatments with proven medical techniques" },
+    { n:"03", title:"❤️ Personalized Care", desc:"Customized solutions for every skin and hair concern." },
+    { n:"04", title:"🛡️ Safe & Trusted", desc:"Effective treatments with the highest safety standards" },
   ];
   return (
     <section style={s.whyUs}>
@@ -717,20 +841,43 @@ function Appointment() {
       </div>
       <div style={s.apptBox}>
         {/* Info */}
-        <div style={s.apptInfo}>
-          <h3 style={s.apptInfoH3}>Clinic Details</h3>
-          <p style={s.apptInfoP}>📍 45, Anna Nagar 2nd Avenue<br />Chennai – 600 040</p>
-          <p style={s.apptInfoP}>📞 +91 98400 55678</p>
-          <p style={s.apptInfoP}>✉️ vipluved@gmail.com</p>
-          <p style={s.apptInfoP}>🕐 Mon–Sat: 9 AM – 7 PM</p>
-          <p style={s.apptInfoP}>🕐 Sunday: 10 AM – 2 PM</p>
-          <p style={{ ...s.apptInfoP, marginTop:16, fontSize:13, opacity:0.8 }}>
-            💡 Bring any previous prescriptions or patch-test results to your first visit.
-          </p>
-          <a href="https://wa.me/919840055678" target="_blank" rel="noreferrer" style={s.waBtn}>
-            💬 WhatsApp Us
-          </a>
-        </div>
+       <div style={s.apptInfo}>
+  <h3 style={s.apptInfoH3}>Clinic Details</h3>
+
+  <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"flex-start" }}>
+    <span style={{ flexShrink:0 }}>📍</span>
+    <span>mahal back side, 308, EVN Rd, Kaikolar Thottam,<br />Jaganathapuram Colony, Erode – 600 040</span>
+  </p>
+
+  <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
+    <span style={{ flexShrink:0 }}>📞</span>
+    <span>+91 7010212258</span>
+  </p>
+
+  <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
+    <span style={{ flexShrink:0 }}>✉️</span>
+    <span style={{ fontSize:13, wordBreak:"break-all" }}>devs.hairandskinclinic2026@gmail.com</span>
+  </p>
+
+  <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
+    <span style={{ flexShrink:0 }}>🕐</span>
+    <span>Mon–Sat: 9 AM – 7 PM</span>
+  </p>
+
+  <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
+    <span style={{ flexShrink:0 }}>🕐</span>
+    <span>Sunday: 10 AM – 2 PM</span>
+  </p>
+
+  <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"flex-start", marginTop:16, fontSize:13, opacity:0.8 }}>
+    <span style={{ flexShrink:0 }}>💡</span>
+    <span>Bring any previous prescriptions or patch-test results to your first visit.</span>
+  </p>
+
+  <a href="https://wa.me/917010212258" target="_blank" rel="noreferrer" style={s.waBtn}>
+    💬 WhatsApp Us
+  </a>
+</div>
 
         {/* Form */}
         <div style={s.apptForm}>
@@ -809,16 +956,18 @@ function Contact() {
     <section id="contact" style={s.contact}>
       <div style={s.sectionTitle}>
         <h2 style={s.sectionH2}>Find Us</h2>
-        <p style={s.sectionP}>Conveniently located in Anna Nagar, Chennai</p>
+        <p style={s.sectionP}>Conveniently located in EVN Rd, Kaikolar Thottam, Jaganathapuram Colony, Erode</p>
         <div style={s.sectionLine}></div>
       </div>
       <div style={s.mapWrap}>
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.3!2d80.2107!3d13.0878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTPCsDA1JzE2Ik4!5e0!3m2!1sen!2sin!4v1"
-          width="100%" height="420"
-          style={{ border:0, display:"block" }}
-          allowFullScreen loading="lazy"
-          title="Devs Hair and Skin Clinic Location"
+         <iframe
+          src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d2995.1190132686374!2d77.71622087505003!3d11.33528138884954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMTHCsDIwJzA3LjAiTiA3N8KwNDMnMDcuNyJF!5e1!3m2!1sen!2sin!4v1783940415465!5m2!1sen!2sin"
+          width="100%"
+          height="420"
+          style={{ border: 0 }}
+          loading="lazy"
+          allowFullScreen
+          title="Location"
         />
       </div>
     </section>
@@ -841,8 +990,8 @@ function Footer({ onNav }) {
       <div style={s.footerGrid}>
         <div>
           <h3 style={s.footerH3}>✦ Devs Hair &amp; Skin Clinic</h3>
-          <p style={s.footerP}>Chennai's trusted destination for dermatology, trichology, and aesthetic medicine since 2016.</p>
-          <p style={{ ...s.footerP, color:GOLD }}>IADVL Member · ISO Certified Clinic</p>
+          <p style={s.footerP}>Erode trusted destination for dermatology, trichology, and aesthetic medicine since 2026.</p>
+          <p style={{ ...s.footerP, color:GOLD }}></p>
         </div>
         <div>
           <h3 style={s.footerH3}>Quick Links</h3>
@@ -868,17 +1017,21 @@ function Footer({ onNav }) {
         </div>
         <div>
           <h3 style={s.footerH3}>Contact</h3>
-          <p style={s.footerP}>📍 45, Anna Nagar 2nd Avenue<br />Chennai – 600 040</p>
-          <p style={s.footerP}>📞 +91 98400 55678</p>
-          <p style={s.footerP}>✉️ vipluved@gmail.com</p>
+          <p style={s.footerP}>📍 mahal back side, 308, EVN Rd, Kaikolar Thottam,<br />Jaganathapuram Colony, Erode – 600 040 – 600 040</p>
+          <p style={s.footerP}>📞 +91 7010212258</p>
+           <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
+    <span style={{ flexShrink:0 }}>✉️</span>
+    <span style={{ fontSize:13, wordBreak:"break-all" }}>devs.hairandskinclinic2026@gmail.com</span>
+  </p>
+
           <br />
-          <a href="https://wa.me/919840055678" target="_blank" rel="noreferrer" style={s.waBtn}>
+          <a href="https://wa.me/917010212258" target="_blank" rel="noreferrer" style={s.waBtn}>
             💬 WhatsApp Us
           </a>
         </div>
       </div>
       <div style={s.footerBottom}>
-        <p>© 2025 Devs Hair &amp; Skin Clinic. All Rights Reserved. · Chennai, Tamil Nadu</p>
+        <p>© 2025 Devs Hair &amp; Skin Clinic. All Rights Reserved. · Erode, Tamil Nadu</p>
       </div>
     </footer>
   );
