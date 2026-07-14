@@ -15,7 +15,7 @@ const CLINIC_IMAGES = [
 
 // ── API Configuration ───────────────────────────────────────────────
 // Points to the Spring Boot backend. Change this for production deployment.
-const API_BASE_URL = "https://clinic-production-0f46.up.railway.app/api";
+const API_BASE_URL = "https://clinic-sgdc.onrender.com/api";
 
 /**
  * Calls the backend POST /api/appointments endpoint.
