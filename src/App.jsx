@@ -858,12 +858,22 @@ function Appointment() {
 
   <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"flex-start" }}>
     <span style={{ flexShrink:0 }}>📍</span>
-    <span>mahal back side, 308, EVN Rd, Kaikolar Thottam,<br />Jaganathapuram Colony, Erode – 600 040</span>
+    <span>No 16/4B, Gomathi House, 1st floor,<br />Kumaraswamy street, erode. TamilNadu. PIN 638001</span>
+  </p>
+
+  <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"flex-start" }}>
+    <span style={{ flexShrink:0 }}>📍</span>
+    <span>Land mark -<br />Behind Mayabajar restauran</span>
   </p>
 
   <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
     <span style={{ flexShrink:0 }}>📞</span>
     <span>+91 7010212258</span>
+  </p>
+   
+    <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
+    <span style={{ flexShrink:0 }}>📞</span>
+    <span>+91 9962272284</span>
   </p>
 
   <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
@@ -881,10 +891,7 @@ function Appointment() {
     <span>Sunday: 10 AM – 2 PM</span>
   </p>
 
-  <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"flex-start", marginTop:16, fontSize:13, opacity:0.8 }}>
-    <span style={{ flexShrink:0 }}>💡</span>
-    <span>Bring any previous prescriptions or patch-test results to your first visit.</span>
-  </p>
+ 
 
   <a href="https://wa.me/917010212258" target="_blank" rel="noreferrer" style={s.waBtn}>
     💬 WhatsApp Us
@@ -1029,8 +1036,11 @@ function Footer({ onNav }) {
         </div>
         <div>
           <h3 style={s.footerH3}>Contact</h3>
-          <p style={s.footerP}>📍 mahal back side, 308, EVN Rd, Kaikolar Thottam,<br />Jaganathapuram Colony, Erode – 600 040 – 600 040</p>
+          <p style={s.footerP}>📍 No 16/4B, Gomathi House, 1st floor,<br />Kumaraswamy street, erode. TamilNadu. PIN 638001
+</p>
+          <p style={s.footerP}>📍 Land mark - Behind Mayabajar restaurant<br /></p>
           <p style={s.footerP}>📞 +91 7010212258</p>
+          <p style={s.footerP}>📞 +91 9962272284</p>
            <p style={{ ...s.apptInfoP, display:"flex", gap:10, alignItems:"center" }}>
     <span style={{ flexShrink:0 }}>✉️</span>
     <span style={{ fontSize:13, wordBreak:"break-all" }}>devs.hairandskinclinic2026@gmail.com</span>
